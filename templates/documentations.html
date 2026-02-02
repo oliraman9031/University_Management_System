@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Report: University Management System (UMS)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+
+        .report-container {
+            max-width: 950px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            padding: 0 50px 40px 50px;
+            /* Adjusted padding to make space for fixed nav if needed, or just consistent */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+        }
+
+        /* --- Navigation Bar Styles --- */
+        .main-nav {
+            background-color: #333;
+            /* Blue background */
+            padding: 0;
+            margin: 0 -50px;
+            /* Negative margin to stretch full width of report-container padding */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            /* Keep nav visible when scrolling */
+            top: 0;
+            /* Stick to the top */
+            z-index: 1000;
+            /* Ensure it's above other content */
+        }
+
+        .main-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            /* Arrange list items horizontally */
+            flex-wrap: wrap;
+            /* Allow items to wrap on smaller screens */
+            justify-content: center;
+            /* Center navigation items */
+        }
+
+        .main-nav ul li {
+            position: relative;
+            /* Needed for absolute positioning of dropdowns */
+            margin: 0;
+        }
+
+        .main-nav ul li a {
+            display: block;
+            /* Make the whole area clickable */
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #ffffff;
+            /* White text */
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            white-space: nowrap;
+            /* Prevent links from wrapping within menu item */
+        }
+
+        .main-nav ul li a:hover {
+            background-color: #555;
+            /* Darker blue on hover */
+        }
+
+        /* Submenu (Nested UL) */
+        .main-nav ul ul {
+            display: none;
+            /* Hide submenus by default */
+            position: absolute;
+            top: 100%;
+            /* Position below the parent item */
+            left: 0;
+            background-color: #ffffff;
+            /* White background for dropdown */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1010;
+            /* Ensure submenu is above the main nav if needed */
+            min-width: 220px;
+            /* Minimum width for dropdown */
+            flex-direction: column;
+            /* Stack submenu items vertically */
+            border-radius: 0 0 5px 5px;
+            /* Rounded corners at the bottom */
+            overflow: hidden;
+            /* Hide sharp corners on wrapped content */
+        }
+
+        .main-nav ul ul li {
+            display: block;
+            /* Stack submenu list items vertically */
+            width: 100%;
+            /* Submenu list items take full width of parent UL */
+        }
+
+        .main-nav ul ul li a {
+            padding: 10px 20px;
+            /* Smaller padding for submenu items */
+            color: #212529;
+            /* Dark text for submenu links */
+        }
+
+        .main-nav ul ul li a:hover {
+            background-color: #e9ecef;
+            /* Light grey hover background */
+            color: #007bff;
+            /* Blue text on hover */
+        }
+
+        /* Show submenu on hover */
+        .main-nav ul li:hover>ul {
+            display: flex;
+            /* Or block, flex is used to control children display */
+        }
+
+        /* Further nesting - for 4.1.2, 4.2.3, 4.2.4 */
+        .main-nav ul ul ul {
+            top: 0;
+            /* Position to the right of the parent submenu item */
+            left: 100%;
+            margin-left: -5px;
+            /* Small overlap */
+            border-radius: 5px;
+            /* Rounded corners */
+        }
+
+        .main-nav ul ul li:hover>ul {
+            display: flex;
+            /* Show nested submenu on hover */
+        }
+
+
+        /* Section Styles */
+        section {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+            padding-top: 20px;
+            /* Add some padding above sections */
+        }
+
+        section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 20px;
+        }
+
+        /* Heading Styles */
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: #343a40;
+            font-weight: 500;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.6em;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 8px;
+            font-weight: 700;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        h4 {
+            font-size: 1.1em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        /* List Styles (for content, not nav) */
+        section ul:not(.main-nav ul),
+        section ol:not(.main-nav ol) {
+            padding-left: 30px;
+            margin-bottom: 15px;
+        }
+
+        section ul li:not(.main-nav li),
+        section ol li:not(.main-nav li) {
+            margin-bottom: 10px;
+        }
+
+        dl {
+            margin-bottom: 15px;
+            padding-left: 15px;
+        }
+
+        dt {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        dd {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+
+        /* Code and Preformatted Text */
+        pre {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.95em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-bottom: 15px;
+        }
+
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border: 1px solid #dee2e6;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            border: none;
+            font-size: 1em;
+        }
+
+        /* Images */
+        img.screenshot {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ced4da;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-radius: 5px;
+        }
+
+        .screenshot-caption {
+            text-align: center;
+            font-style: italic;
+            color: #6c757d;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+        }
+
+        /* Table Styles */
+        table.schema-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        table.schema-table th,
+        table.schema-table td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: left;
+            font-size: 0.95em;
+            vertical-align: top;
+        }
+
+        table.schema-table th {
+            background-color: #e9ecef;
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        table.schema-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        table.schema-table code {
+            font-size: 0.95em;
+            background: none;
+            padding: 0;
+            border: none;
+        }
+
+        /* Page Number (Simple placeholder - requires JavaScript for dynamic numbering) */
+        .page-number {
+            text-align: right;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        footer {
+            background-color: #333;
+        }
+
+        footer p {
+            color: white;
+        }
+
+        .file-list {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 20px;
+        }
+
+        .file-list ul {
+            list-style-type: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .file-list ul li {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 10px;
+            /* width: 200px; */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .file-list ul li:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .file-list ul li img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+
+        .file-list ul li a {
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .file-list ul li a:hover {
+            color: red;
+            text-decoration: underline;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .report-container {
+                margin: 15px;
+                padding: 15px;
+                /* Reduced padding on small screens */
+            }
+
+            .main-nav {
+                margin: 0 -15px;
+                /* Adjust negative margin for small screen padding */
+            }
+
+            .title-page h1 {
+                font-size: 2em;
+            }
+
+            .title-page h2 {
+                font-size: 1.3em;
+            }
+
+            h2 {
+                font-size: 1.4em;
+            }
+
+            h3 {
+                font-size: 1.2em;
+            }
+
+            h4 {
+                font-size: 1em;
+            }
+
+            /* Adjust nav items on small screens */
+            .main-nav ul {
+                flex-direction: column;
+                /* Stack main nav items vertically */
+                align-items: stretch;
+                /* Make items fill width */
+            }
+
+            .main-nav ul li {
+                width: 100%;
+                /* Full width for main nav items */
+                text-align: center;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                /* Separator */
+            }
+
+            .main-nav ul li:last-child {
+                border-bottom: none;
+            }
+
+            .main-nav ul li a {
+                padding: 10px 15px;
+                /* Smaller padding */
+            }
+
+            /* Adjust submenus for stacked layout */
+            .main-nav ul ul {
+                position: static;
+                /* Remove absolute positioning */
+                box-shadow: none;
+                /* Remove shadow */
+                min-width: auto;
+                background-color: rgba(0, 0, 0, 0.1);
+                /* Slightly different background */
+                border-radius: 0;
+                margin-top: 5px;
+                margin-bottom: 5px;
+            }
+
+            .main-nav ul li:hover>ul {
+                display: flex;
+                /* Submenus still show on hover */
+            }
+
+            .main-nav ul ul ul {
+                /* Further nested submenus */
+                position: static;
+                /* Remove absolute positioning */
+                left: auto;
+                margin-left: 0;
+                border-radius: 0;
+            }
+
+
+            .main-nav ul ul li a {
+                padding: 8px 30px;
+                /* Indent submenu items */
+                text-align: left;
+                color: #e9ecef;
+                /* Lighter text */
+            }
+
+            .main-nav ul ul li a:hover {
+                background-color: rgba(0, 0, 0, 0.2);
+                color: #ffffff;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="top">
+        <nav class="nav-main"
+            style="background-color: #333; color: #fff; padding: 10px 0; text-align: center; width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;">
+            <ul style="list-style: none; padding: 0; margin: 0; display: flex; justify-content: center;">
+
+                <li style="margin: 0 15px;">
+                    <a href="/"
+                        style="color: #fff; text-decoration: none; padding: 10px 15px; transition: background-color 0.3s ease;">UMS</a>
+                </li>
+                <li style="margin: 0 15px;">
+                    <a href="/"
+                        style="color: #fff; text-decoration: none; padding: 10px 15px; transition: background-color 0.3s ease;">Home</a>
+                </li>
+                <li style="margin: 0 15px;">
+                    <a href="/aboutme"
+                        style="color: #fff; text-decoration: none; padding: 10px 15px; transition: background-color 0.3s ease;">About</a>
+                </li>
+                <li style="margin: 0 15px;">
+                    <a href="/documentations" class="active"
+                        style="color: #fff; text-decoration: none; padding: 10px 15px; transition: background-color 0.3s ease; background-color: #555; border-radius: 5px;">Documentation</a>
+                </li>
+                <li style="margin: 0 15px;">
+                    <a href="/signin"
+                        style="color: #fff; text-decoration: none; padding: 10px 15px; transition: background-color 0.3s ease;">Sign
+                        In</a>
+                </li>
+                <li style="margin: 0 15px;">
+                    <a href="/signup"
+                        style="color: #fff; text-decoration: none; padding: 10px 15px; transition: background-color 0.3s ease;">Sign
+                        Up</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <br><br><br><br>
+    <div class="report-container">
+
+
+        <!-- Navigation Bar (Replaces TOC) -->
+        <nav class="main-nav" style="position: relative;">
+            <ul>
+                <li><a href="#introduction">1. Introduction</a>
+                    <ul>
+                        <li><a href="#intro-background">1.1 Background</a></li>
+                        <li><a href="#intro-problem">1.2 Problem Statement</a></li>
+                        <li><a href="#intro-objectives">1.3 Objectives</a></li>
+                        <li><a href="#intro-scope">1.4 Scope of the Project</a>
+                            <ul>
+                                <li><a href="#scope-functional">1.4.1 Functional</a></li>
+                                <li><a href="#scope-technical">1.4.2 Technical</a></li>
+                                <li><a href="#scope-limitations">1.4.3 Limitations</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><a href="#requirements">2. Requirement Analysis</a>
+                    <ul>
+                        <li><a href="#req-functional">2.1 Functional</a></li>
+                        <li><a href="#req-nonfunctional">2.2 Non-Functional</a></li>
+                    </ul>
+                </li>
+                <li><a href="#design">3. System Design</a>
+                    <ul>
+                        <li><a href="#design-architecture">3.1 Architecture</a></li>
+                        <li><a href="#design-database">3.2 Database Design</a>
+                            <ul>
+                                <li><a href="#design-er">3.2.1 ER Diagram</a></li>
+                                <li><a href="#design-erto-table">3.1.2 ER To Table</a></li>
+                                <li><a href="#design-schema">3.2.3 Relational Schema</a></li>
+                                <li><a href="#design-relationships">3.2.4 Relationship Analysis</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li><a href="#implementation">4. Implementation Details</a>
+                    <ul>
+                        <li><a href="#impl-tech">4.1 Technologies Used</a></li>
+                        <li><a href="#impl-modules">4.2 Key Modules</a></li>
+                    </ul>
+                </li>
+                <li><a href="#testing">5. Testing</a></li>
+                <li><a href="#conclusion">6. Conclusion</a></li>
+                <li><a href="#future-work">7. Future Work</a></li>
+                <li><a href="#references">8. References</a></li>
+            </ul>
+        </nav>
+
+
+        <!-- INTRODUCTION Section -->
+        <section id="introduction">
+            <h2>1. INTRODUCTION</h2>
+
+            <h3 id="intro-background">1.1 Background</h3>
+            <p>Universities and educational institutions handle a vast amount of data and complex processes daily.
+                Traditional manual methods involving paper records or scattered digital files are often inefficient,
+                prone to errors, data redundancy, and difficulties in information retrieval and coordination. An
+                automated, centralized management system is essential for modern institutions
+                to operate smoothly and provide better services to students and faculty.</p>
+
+            <h3 id="intro-problem">1.2 Problem Statement</h3>
+            <p>Managing student records, course enrollments, faculty details, exam schedules, fee payments,
+                and result processing manually is time-consuming, resource-intensive, and susceptible to
+                errors. Key challenges include:</p>
+            <ul>
+                <li>Inefficiencies in student registration and course enrollment leading to potential conflicts or
+                    delays.</li>
+                <li>Difficulties in accurately tracking student academic progress, fee dues, and payment status.</li>
+                <li>Lack of a streamlined process for faculty to manage their courses, schedule exams efficiently,
+                    evaluate results consistently, and communicate them promptly.</li>
+                <li>Significant administrative overhead in handling paperwork, record-keeping, approvals, rejections,
+                    and communication across departments.</li>
+                <li>Potential data security vulnerabilities and data redundancy issues associated with decentralized or
+                    paper-based systems.</li>
+            </ul>
+            <p>This project develops a comprehensive University Management System (UMS) to address
+                these challenges by providing a centralized, automated, role-based, and secure platform.</p>
+
+            <h3 id="intro-objectives">1.3 Objectives</h3>
+            <ul>
+                <li>To develop a centralized database system for efficient management of student, faculty, course,
+                    exam, fee, department, and administrative data.</li>
+                <li>To automate core university processes, including student registration, course enrollment, exam
+                    scheduling, result evaluation and publication, and fee tracking.</li>
+                <li>To enhance data security and ensure appropriate access levels through distinct role-based interfaces
+                    (Admin, Faculty, Student).</li>
+                <li>To minimize manual errors and data redundancy by implementing a well-structured relational
+                    database schema with appropriate constraints.</li>
+                <li>To provide an intuitive and user-friendly web interface for all user types to interact with the
+                    system
+                    effectively.</li>
+                <li>To create a scalable and maintainable system architecture capable of supporting institutional needs.
+                </li>
+                <li>To implement automated email notifications for critical system events such as registration
+                    approvals/rejections and credential distribution.</li>
+            </ul>
+
+            <h3 id="intro-scope">1.4 Scope of the Project</h3>
+            <h4 id="scope-functional">1.4.1 Functional Scope</h4>
+            <ul>
+                <li><strong>Student Management:</strong>
+                    <ul>
+                        <li>Registration of new students with verification and approval by administrators.</li>
+                        <li>Managing student profiles, viewing enrollment status, and handling course
+                            registrations/unenrollment.</li>
+                        <li>Displaying personalized dashboards with exam schedules, results, and fee status.</li>
+                        <li>Simulated fee payment functionality.</li>
+                    </ul>
+                </li>
+                <li><strong>Faculty Management:</strong>
+                    <ul>
+                        <li>Registration of faculty members with verification by administrators.</li>
+                        <li>Managing faculty profiles, viewing assigned courses, and examination responsibilities.</li>
+                        <li>Providing personalized dashboards with relevant academic information.</li>
+                        <li>Managing exams (add, update, delete), evaluating results (mark entry, grading), and locking
+                            results.</li>
+                    </ul>
+                </li>
+                <li><strong>Course Management:</strong>
+                    <ul>
+                        <li>Creation, modification, and deletion of courses by administrators.</li>
+                        <li>Management of course details (ID, name, semester, credits, price).</li>
+                    </ul>
+                </li>
+                <li><strong>Examination Management:</strong>
+                    <ul>
+                        <li>Scheduling exams (including type, date, duration, venue) by faculty for their assigned
+                            course.</li>
+                        <li>Admin overview and management of exams.</li>
+                        <li>Storing and managing exam results (marks, grades, status).</li>
+                    </ul>
+                </li>
+                <li><strong>Fee Management:</strong>
+                    <ul>
+                        <li>Generating fee records based on registration, course enrollment, and exams.</li>
+                        <li>Allowing administrators to manage fee records.</li>
+                        <li>Displaying pending/completed fee transactions on student dashboards.</li>
+                        <li>Tracking simulated payments via Payment ID.</li>
+                    </ul>
+                </li>
+                <li><strong>Department Management:</strong>
+                    <ul>
+                        <li>Creating, updating, or deleting departments.</li>
+                        <li>Appointing Heads of Departments (HODs) by administrators from active faculty.</li>
+                        <li>Associating faculty members with relevant departments.</li>
+                    </ul>
+                </li>
+                <li><strong>User Authentication and Authorization:</strong>
+                    <ul>
+                        <li>Implementing role-based access control (Admin, Faculty, Student).</li>
+                        <li>Ensuring secure login using official email (`@thapar.edu`) and password, and logout
+                            functionalities.</li>
+                    </ul>
+                </li>
+                <li><strong>Email Notifications:</strong>
+                    <ul>
+                        <li>Sending automated emails for registration approval/rejection, credential delivery, and
+                            account restrictions.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4 id="scope-technical">1.4.2. Technical Scope</h4>
+            <ul>
+                <li>Backend Development: Using Flask (Python) as the backend framework.</li>
+                <li>Database Management: Implementing MySQL using the PyMySQL connector for handling relational
+                    data.</li>
+                <li>Frontend Development: Utilizing HTML, CSS, and JavaScript with Jinja2 templating for designing user
+                    interfaces.</li>
+                <li>Email Handling: Using Flask-Mail for sending automated notifications.</li>
+                <li>Database Initialization: Providing scripts (`database_prerequisite.py`) for database and table
+                    creation, and insertion of initial data.</li>
+            </ul>
+
+            <h4 id="scope-limitations">1.4.3. Limitations (Out of Scope)</h4>
+            <ul>
+                <li>The system does not include modules for Attendance Tracking, Hostel Management, or Library
+                    Management.</li>
+                <li>Integration with external learning platforms (e.g., Moodle, Blackboard) is not covered.</li>
+                <li>Advanced reporting, analytics, and data visualization features are not implemented.</li>
+                <li>Real-time payment gateway integration is excluded; payments are simulated.</li>
+                <li>SMS notifications are not implemented.</li>
+            </ul>
+        </section>
+
+
+        <!-- REQUIREMENT ANALYSIS Section -->
+        <section id="requirements">
+            <h2>2. REQUIREMENT ANALYSIS</h2>
+            <h3 id="req-functional">2.1 Functional Requirements</h3>
+            <ul>
+                <li>FR1: System shall allow users to register as either Student or Faculty through dedicated forms.</li>
+                <li>FR2: Admin users shall have the functionality to approve or reject pending Student and Faculty
+                    registrations.</li>
+                <li>FR3: System shall provide secure login for registered Admin, Student, and Faculty users using their
+                    official `@thapar.edu` email and password.</li>
+                <li>FR4: System shall validate user input, including email formats (`@thapar.edu` for login, general
+                    format for personal email), password length (min 8 characters), and required fields.</li>
+                <li>FR5: Students shall be able to view and update their profile information (name, address, phone,
+                    personal email, password).</li>
+                <li>FR6: Students shall be able to view available courses, register for courses, view enrolled courses,
+                    and
+                    unenroll from courses.</li>
+                <li>FR7: Students shall be able to view their upcoming and past exam schedules, view results
+                    categorized by status (Unevaluated, Evaluated, Locked), and view pending/paid fees.</li>
+                <li>FR8: Students shall be able to simulate fee payment by entering a Payment ID for pending fees.</li>
+                <li>FR9: Faculty shall be able to view and update their profile information (name, phone, personal
+                    email, password).</li>
+                <li>FR10: Faculty shall be able to view students enrolled in their assigned course and unenroll them if
+                    necessary.</li>
+                <li>FR11: Faculty shall manage exams for their assigned course (add, update, delete), including details
+                    like type, date, duration, venue, and optional fees.</li>
+                <li>FR12: Faculty shall evaluate exam results by entering marks, calculating grades based on percentile
+                    logic, updating result status, and locking results for publication.</li>
+                <li>FR13: Admin users shall have CRUD capabilities for Student records (including managing status:
+                    Pending, Enrolled, Graduated, Restricted).</li>
+                <li>FR14: Admin users shall have CRUD capabilities for Faculty records (including managing status:
+                    Pending, Active).</li>
+                <li>FR15: Admin users shall have CRUD capabilities for Courses and Departments (including HOD
+                    appointment).</li>
+                <li>FR16: Admin users shall manage Fees (view, filter, update, delete) and Exams (view, update, delete).
+                </li>
+                <li>FR17: Admin users shall view results across all courses/exams.</li>
+                <li>FR18: The primary Admin (ID=1) shall manage other Admin accounts (add, delete, update own
+                    profile).</li>
+                <li>FR19: System shall automatically generate a unique College Email and initial Password upon
+                    student/faculty registration approval using the `generateIDPass` function.</li>
+                <li>FR20: System shall send automated email notifications for registration approval/rejection,
+                    credential
+                    delivery, and account restriction/Unrestriction.</li>
+            </ul>
+
+            <h3 id="req-nonfunctional">2.2 Non-Functional Requirements</h3>
+            <ul>
+                <li>NFR1: Security: Role-based access control implemented via Flask sessions. Input validation
+                    performed. Sensitive email credentials stored externally (`credentials.py`).</li>
+                <li>NFR2: Usability: Intuitive UI with distinct dashboards and navigation per role. Basic responsiveness
+                    handled via CSS.</li>
+                <li>NFR3: Reliability: Data integrity enforced via database constraints (PK, FK, UNIQUE, NOT NULL,
+                    ENUMS, CHECK, ON DELETE) defined in schema script. Basic error handling implemented.</li>
+                <li>NFR4: Performance: Direct database queries via PyMySQL. Performance depends on query efficiency
+                    and database health.</li>
+                <li>NFR5: Scalability: Relational database supports data growth. Application scalability depends on
+                    server configuration and potential optimizations.</li>
+                <li>NFR6: Maintainability: Code organized into main script and database script. Use of Flask routes and
+                    templates promotes modularity.</li>
+            </ul>
+        </section>
+
+
+        <!-- SYSTEM DESIGN Section -->
+        <section id="design">
+            <h2>4. SYSTEM DESIGN</h2>
+
+            <h3 id="design-architecture">4.1 Architecture</h3>
+            <p>The University Management System employs a standard <strong>3-Tier Web Application
+                    Architecture:</strong></p>
+            <ul>
+                <li><strong>Presentation Tier (Client-Side):</strong> Web browsers render HTML pages (from the
+                    `templates/` directory)
+                    styled with CSS (`static/css/`). Basic JavaScript (`static/scripts/`) handles minor client-side
+                    interactions. Jinja2 templating dynamically generates HTML.</li>
+                <li><strong>Application Tier (Server-Side):</strong> The Flask application (`main.py`) processes HTTP
+                    requests, manages
+                    user sessions, implements business logic (validation, grading), interacts with the database (via
+                    PyMySQL), and handles email notifications (via Flask-Mail).</li>
+                <li><strong>Data Tier (Database):</strong> An externally hosted MySQL database (Aiven cloud) stores
+                    persistent data.
+                    The schema, defined in `database_prerequisite.py`, includes tables for students, faculty, courses,
+                    etc., with integrity enforced by constraints.</li>
+            </ul>
+
+            <h3 id="design-database">4.2 Database Design</h3>
+
+            <h4 id="design-er">4.2.1 ER Diagram (Conceptual)</h4>
+            <p>(Refer to Appendix A for the high-resolution ER Diagram). The diagram illustrates entities like
+                Students, Faculty, Courses, etc., and their relationships.</p>
+            <p>Key relationships include N:M between Students and Courses (via Enrollment), 1:N between Faculty and
+                Department, N:M between Students and Exams (via Takes_Exams), and others as detailed in the diagram.</p>
+            <!-- Placeholder for ER Diagram Image -->
+            <img src="{{ url_for('static', filename='images/ER.jpg') }}" alt="Conceptual Entity-Relationship Diagram"
+                class="screenshot">
+            <p class="screenshot-caption">Conceptual Entity-Relationship Diagram</p>
+
+
+            <h4 id="design-erto-table">4.1.2 ER To Table</h4> <!-- Following OCR numbering -->
+            <p>The University Management System requires a well-structured database with 12 (including two
+                tables for multivalued attributes of students and faculty) tables to handle various entities and their
+                relationships. The relationships between entities are outlined below:</p>
+            <ol>
+                <li>Students and Courses (N:M Relationship)
+                    <ul>
+                        <li>Tables Required: students, courses, enrollment</li>
+                        <li>Students can enroll in multiple courses, and a course can have multiple students.</li>
+                        <li>The enrollment table establishes the relationship, with a composite primary key comprising
+                            student id and course id.</li>
+                        <li>An additional attribute, enrollment_date, is included.</li>
+                    </ul>
+                </li>
+                <li>Faculty and Department (1:N Relationship)
+                    <ul>
+                        <li>Tables Required: faculty, department</li>
+                        <li>A faculty member belongs to a single department, but a department can have multiple faculty
+                            members.</li>
+                        <li>The department table is independent, while the faculty table includes department_id as a
+                            foreign
+                            key.</li>
+                    </ul>
+                </li>
+                <li>Faculty and Course (1:N Relationship)
+                    <ul>
+                        <li>Tables Required: faculty, courses</li>
+                        <li>A faculty member can teach only one course, but a course can be taught by multiple faculty
+                            members.</li>
+                        <li>The faculty table includes course_id as a foreign key.</li>
+                    </ul>
+                </li>
+                <li>Courses and Exams (1:N Relationship)
+                    <ul>
+                        <li>Tables Required: courses, exams</li>
+                        <li>A course can conduct multiple exams, but each exam is associated with only one course.</li>
+                        <li>The exam table includes course_id as a foreign key and exam_id as the primary key.</li>
+                        <li>A unique constraint is applied to the combination of course_id and type.</li>
+                    </ul>
+                </li>
+                <li>Courses and Results (1:N Relationship)
+                    <ul>
+                        <li>Tables Required: courses, results</li>
+                        <li>A course can have multiple results published, but each result belongs to only one course.
+                        </li>
+                        <li>The results table includes course_id as a foreign key.</li>
+                    </ul>
+                </li>
+                <li>Students and Exams (N:M Relationship)
+                    <ul>
+                        <li>Tables Required: students, exams, takes_exams</li>
+                        <li>A student can take multiple exams, and an exam can be given by multiple students enrolled in
+                            the
+                            same course.</li>
+                        <li>The takes_exams table contains a composite primary key of student_id and exam_id.</li>
+                    </ul>
+                </li>
+                <li>Students and Results (1:N Relationship)
+                    <ul>
+                        <li>Tables Required: students, results</li>
+                        <li>A student can receive multiple results, but each result is associated with only one student.
+                        </li>
+                    </ul>
+                </li>
+            </ol>
+            <ol start="8">
+                <li>Students and Fees (1:N Relationship)
+                    <ul>
+                        <li>Tables Required: students, fees</li>
+                        <li>A student can pay multiple fees, but each fee is linked to only one student.</li>
+                        <li>The fees table includes student_id as a foreign key.</li>
+                    </ul>
+                </li>
+                <li>Courses and Fees (1:1 Relationship)
+                    <ul>
+                        <li>Tables Required: courses, fees</li>
+                        <li>Each course charges only one fee.</li>
+                        <li>The fees table includes course_id as a foreign key.</li>
+                    </ul>
+                </li>
+                <li>Exams and Fees (1:1 Relationship)
+                    <ul>
+                        <li>Tables Required: exams, fees</li>
+                        <li>Each exam charges only one fee.</li>
+                        <li>The fees table includes exam_id as a foreign key.</li>
+                    </ul>
+                </li>
+                <li>Admin Management (1:1 Relationship)
+                    <ul>
+                        <li>Tables Required: admin</li>
+                        <li>The admin manages all entities. Since all entities are managed by the admin, no
+                            relationships need
+                            to be explicitly established.</li>
+                    </ul>
+                </li>
+            </ol>
+
+
+            <h4 id="design-schema">4.2.3 Relational Schema (Table Definitions)</h4> <!-- Following OCR numbering -->
+            <p>The database schema comprises the following core tables (defined in
+                `database_prerequisite.py`):</p>
+            <ol>
+                <li>Student<br>
+                    Students(<code>Student_ID</code>, <code>First_Name</code>, <code>Middle_Name</code>,
+                    <code>Last_Name</code>, <code>street</code>, <code>district</code>, <code>state</code>,
+                    <code>country</code>,<br>
+                    <code>Gender</code>, <code>Date_of_Birth</code>, <code>mail</code>,
+                    <code>College_Mail</code>,<code>Password</code>, <code>Enrollment_Year</code>,
+                    <code>Graduation_Year</code>,<br>
+                    <code>Status</code>)
+                </li>
+                <li>Student Phone No<br>
+                    PhoneNumbers(<code>Student ID</code>, <code>Phone</code>)
+                </li>
+                <li>Courses<br>
+                    Courses(<code>Course_ID</code>, <code>Course_Name</code>, <code>Semester</code>,
+                    <code>Credits</code>, <code>Price</code>)
+                </li>
+                <li>Enrollment<br>
+                    Enrollment(<code>Student_ID</code>, <code>Course_ID</code>, <code>Enrollment_On</code>)
+                </li>
+                <li>Fees<br>
+                    Fees(<code>Fee_ID</code>, <code>Student_ID</code>,<code>Exam_ID</code>,<code>Course_ID</code>,
+                    <code>Amount</code>, <code>Issued_Date</code>, <code>Payment_Date</code>,<code>Type</code>,<br>
+                    <code>Status</code>,<code>payment_ID</code>)
+                </li>
+            </ol>
+            <ol start="6">
+                <li>Exams<br>
+                    Exams(<code>Exam_ID</code>,<code>Course_ID</code>, <code>Exam_Date</code>,
+                    <code>Exam_Duration</code>, <code>Exam_Type</code>, <code>Venue</code>,<code>Status</code>)
+                </li>
+                <li>Takes Exam<br>
+                    Takes_Exam(<code>Student ID</code>, <code>Exam ID</code>,<code>Status</code>)
+                </li>
+                <li>Results<br>
+                    Results(<code>Result_ID</code>, <code>Exam_ID</code>,<code>Student_ID</code>,
+                    <code>Course_ID</code>, <code>Marks_Obtained</code>,<code>Grade</code>, <code>Status</code>)
+                </li>
+                <li>Department<br>
+                    Department(<code>Department_ID</code>, <code>Department_Name</code>,
+                    <code>Head_Of_Department</code>)
+                </li>
+                <li>Faculty<br>
+                    Faculty(<code>Faculty_ID</code>, <code>First_Name</code>, <code>Middle_Name</code>,
+                    <code>Last_Name</code>, <code>Date_Of_Joining</code>, <code>Designation</code>,<br>
+                    <code>Mail</code>,<code>Official_Mail</code>,<code>Password</code>,<code>Status</code>,<code>Course_ID</code>,<code>Department_ID</code>)
+                </li>
+                <li>Faculty Phone No<br>
+                    FacultyPhone(<code>Faculty_ID</code>, <code>Phone</code>)
+                </li>
+                <li>Admin<br>
+                    Admin(<code>Admin_ID</code>, <code>User_Name</code>, <code>Password</code>,
+                    <code>Email</code>,<code>Password</code>)
+                </li>
+            </ol>
+
+
+            <h4 id="design-relationships">4.2.4 Relationship Analysis (Participation)</h4>
+            <!-- Following OCR numbering -->
+            <p>The participation of entities in various relationships within the University Management System is
+                described below:</p>
+            <ol>
+                <li>Students and Courses:
+                    <ul>
+                        <li>Partial Participation (Both) A student may not be enrolled in any course, and some courses
+                            may have no students enrolled. Therefore, both entities participate partially in the
+                            relationship.</li>
+                    </ul>
+                </li>
+                <li>Faculty and Department:
+                    <ul>
+                        <li>Total Participation (Faculty) & Partial Participation (Department): Every faculty member
+                            must belong to a department, but a department can exist without any faculty members. Faculty
+                            participation is total, while department participation is partial.</li>
+                    </ul>
+                </li>
+                <li>Faculty and Courses:
+                    <ul>
+                        <li>Total Participation (Faculty) & Partial Participation (Course): Every faculty member must
+                            teach at least one course. However, some courses may not be assigned to any faculty.
+                            Therefore,
+                            faculty participation is total, while course participation is partial.</li>
+                    </ul>
+                </li>
+            </ol>
+            <ol start="4">
+                <li>Departments and Courses:
+                    <ul>
+                        <li>Total Participation (Both): Every department must offer at least one course, and every
+                            course
+                            must be offered by a department. Thus, both department and course participation are total.
+                        </li>
+                    </ul>
+                </li>
+                <li>Courses and Exams:
+                    <ul>
+                        <li>Total Participation (Exam) & Partial Participation (Course): Every exam must be
+                            associated with a course, but a course may not necessarily conduct exams. Therefore, exams
+                            participate totally, while courses participate partially.</li>
+                    </ul>
+                </li>
+                <li>Students and Exams:
+                    <ul>
+                        <li>Total Participation (Exam) & Partial Participation (Student): Every exam is taken by one
+                            or more students, but some students may not have participated in any exams. Hence, exams
+                            participate totally, while students participate partially.</li>
+                    </ul>
+                </li>
+                <li>Courses, Exams, and Fees:
+                    <ul>
+                        <li>Total Participation (Course & Exam) & Partial Participation (Fee): Every course and
+                            exam have associated fees, but some fees may not be related to any specific course or exam
+                            (e.g., registration fees). Therefore, fees participate partially.</li>
+                    </ul>
+                </li>
+                <li>Students and Fees:
+                    <ul>
+                        <li>Total Participation (Fee) & Partial Participation (Student): Every fee must be associated
+                            with a student, but a student may not have paid any fees. Thus, fees participate totally,
+                            while
+                            students participate partially.</li>
+                    </ul>
+                </li>
+                <li>Admin Management:
+                    <ul>
+                        <li>Total Participation (Both): Every entity in the system is managed by an admin, and an admin
+                            cannot exist without management authority. Therefore, both participate totally.</li>
+                    </ul>
+                </li>
+                <li>Students and Results:
+                    <ul>
+                        <li>Total Participation (Result) & Partial Participation (Student): Every result is linked to a
+                            student, but not all students may have results published. Thus, results participate totally,
+                            while
+                            students participate partially.</li>
+                    </ul>
+                </li>
+                <li>Courses and Results:
+                    <ul>
+                        <li>Total Participation (Result) & Partial Participation (Course): Every result is associated
+                            with a course, but some courses may not have any results published. Therefore, results
+                            participate totally, while courses participate partially.</li>
+                    </ul>
+                </li>
+            </ol>
+        </section>
+
+        <!-- IMPLEMENTATION DETAILS Section -->
+        <section id="implementation">
+            <h2>5. IMPLEMENTATION DETAILS</h2>
+
+            <h3 id="impl-tech">5.1 Technologies Used</h3>
+            <ul>
+                <li>Backend Framework: Flask (Python)</li>
+                <li>Database: MySQL</li>
+                <li>Database Connector: PyMySQL</li>
+                <li>Templating Engine: Jinja2</li>
+                <li>Frontend: HTML5, CSS3, JavaScript</li>
+                <li>Email: Flask-Mail (SMTP)</li>
+                <li>Core Python Libraries: `datetime`, `re`, `ast`, `threading`</li>
+                <li>Deployment: Render (Cloud Platform)</li>
+                <li>Database Hosting: Aiven (Cloud Platform)</li>
+            </ul>
+
+
+            <h3 id="impl-modules">5.2 Key Modules & Functionality</h3>
+            <ul>
+                <li><strong>Main Application (`main.py`):</strong> Central script containing Flask app setup, database
+                    connection, mail
+                    configuration, all route definitions (@app.route), session management, helper functions, and core
+                    business logic.</li>
+                <li><strong>Database Setup (`database_prerequisite.py`):</strong> Script for DDL (CREATE TABLE) and
+                    initial DML
+                    (INSERT) statements, ensuring the database schema is correctly initialized.</li>
+                <li><strong>Routing & Views:</strong> Flask routes map URLs to Python functions that process requests,
+                    interact with
+                    the database (`mycursor`), and render Jinja2 templates (`templates/*.html`) with dynamic data.</li>
+                <li><strong>User Roles & Session Management:</strong> Session variables (`session['user']`) store
+                    logged-in user data.
+                    Route decorators or initial checks within routes enforce role-based access.</li>
+                <li><strong>Forms & Data Handling:</strong> HTML forms submit data via POST requests. Flask's
+                    `request.form` accesses
+                    submitted data. Backend validation using Python's `re` and conditional checks.</li>
+
+                <li><strong>Database Interaction (PyMySQL):</strong> Direct SQL execution using `mycursor.execute(query,
+                    values)`.
+                    Data fetching (`fetchone`, `fetchall`) and committing changes (`mydb.commit()`).</li>
+                <li><strong>Email Notifications (`send_email` function):</strong> Uses Flask-Mail to send emails for
+                    specific triggers
+                    (approval, rejection, restriction).</li>
+                <li><strong>Helper Functions:</strong> Utility functions like `generateIDPass` (credential generation),
+                    `getFacultyCourses/Departments` (data retrieval for forms), `querymaker` (displaying executed SQL),
+                    `calculate_percentile` (grading logic).</li>
+                <li><strong>Templates (`templates/`):</strong> HTML files defining the structure and presentation for
+                    each page/view
+                    (dashboards, forms, tables).</li>
+                <li><strong>Static Files (`static/`):</strong> Contains CSS (`css/`) for styling and JavaScript
+                    (`scripts/`) for client-side
+                    enhancements.</li>
+                <li><strong>Credentials (`credentials.py`):</strong> External file (not in repo, assumed) storing
+                    sensitive database and
+                    email configuration.</li>
+            </ul>
+        </section>
+
+        <!-- TESTING Section -->
+        <section id="testing">
+            <h2>6. TESTING (BRIEF OVERVIEW)</h2>
+            <p>Testing was conducted primarily through manual testing of the deployed application on
+                Render. This involved:</p>
+            <ul>
+                <li>Role-Based Access: Logging in as Admin, Faculty, and Student to verify access controls and
+                    visibility
+                    of relevant menus/features.</li>
+                <li>Core Workflows: Executing key processes for each role, such as student registration -> admin
+                    approval -> student login -> course enrollment -> fee check; faculty login -> exam creation ->
+                    result
+                    evaluation -> result locking; admin login -> course management -> department management -> user
+                    status changes.</li>
+                <li>Form Submission & Validation: Testing all forms with both valid and invalid data (e.g., incorrect
+                    email formats, empty required fields, non-numeric input where numbers expected) to check
+                    validation logic and error messages.</li>
+                <li>Data Integrity: Attempting actions that should be prevented by database constraints (e.g., creating
+                    duplicate course IDs, enrolling in non-existent courses, deleting departments with active faculty -
+                    checking ON DELETE behavior).</li>
+                <li>Boundary Conditions: Testing scenarios like the first user registration, managing empty
+                    lists/tables,
+                    evaluating exams with zero marks.</li>
+                <li>Browser Compatibility (Basic): Checking functionality in latest versions of Chrome and Firefox.</li>
+                <li>Email Notifications: Verifying receipt of emails for approval/rejection/restriction actions using
+                    designated test email accounts.</li>
+                <li>Filtering/Sorting: Testing the filter and sort functionalities in admin tables (Courses, Fees).</li>
+            </ul>
+            <p>Limitations: No automated testing (Unit, Integration, E2E) was performed. Load testing and
+                formal security penetration testing were outside the scope of this project phase.</p>
+        </section>
+
+
+
+        <!-- CONCLUSION Section -->
+        <section id="conclusion">
+            <h2>8. CONCLUSION</h2>
+            <p>The University Management System project successfully delivers a comprehensive web
+                application tailored for managing essential academic and administrative functions at Thapar
+                Institute. By utilizing the Flask framework, a MySQL database, and standard web technologies,
+                the system provides a centralized, efficient, and role-based platform for students, faculty, and
+                administrators. It effectively automates critical processes such as registration, enrollment, exam
+                management, fee tracking, and result processing, thereby reducing manual workload and the
+                potential for errors. The inclusion of features like automated email notifications, dynamic
+                credential generation, and percentile-based grading enhances its utility. The project
+                demonstrates a practical application of database design principles and full-stack web
+                development to address real-world challenges in university administration, providing a solid
+                foundation for future expansion and improvement.</p>
+        </section>
+
+        <!-- FUTURE WORK & ENHANCEMENTS Section -->
+        <section id="future-work">
+            <h2>9. FUTURE WORK & ENHANCEMENTS</h2>
+            <p>While the current UMS provides a strong foundation, potential future enhancements could
+                include:</p>
+            <ul>
+                <li>Attendance Module: Implement features for faculty to record daily/lecture-wise attendance and for
+                    students/admins to view reports.</li>
+                <li>Library & Hostel Modules: Develop dedicated modules for managing library book issuance/returns
+                    and hostel room allocation/fees.</li>
+                <li>Advanced Reporting: Integrate a reporting engine to generate downloadable reports (e.g., student
+                    transcripts, fee defaulter lists, course enrollment statistics).</li>
+                <li>Real Payment Gateway Integration: Replace the simulated payment ID system with a real payment
+                    gateway (e.g., Razorpay, PayU) for actual online fee collection.</li>
+                <li>Timetable Management: Add functionality for creating and viewing dynamic class schedules for
+                    students and faculty.</li>
+                <li>UI/UX Refinement: Improve the visual design and user experience, possibly using a more modern
+                    CSS framework or implementing more sophisticated JavaScript interactions. Ensure better
+                    responsiveness across devices.</li>
+                <li>API Development: Create RESTful APIs to allow potential future integration with other university
+                    systems or a dedicated mobile application.</li>
+                <li>Security Enhancements: Implement password hashing (e.g., using Werkzeug's security helpers or
+                    libraries like passlib) instead of storing plain text passwords. Add CSRF protection to forms.
+                    Perform
+                    thorough input sanitization.</li>
+                <li>Automated Testing: Develop unit tests (e.g., using PyTest) for backend logic and integration/end-to-
+                    end tests (e.g., using Selenium) for user workflows to improve robustness and maintainability.</li>
+                <li>Performance Tuning: Analyze and optimize database queries, especially for large datasets.
+                    Implement caching mechanisms for frequently accessed, less dynamic data.</li>
+            </ul>
+        </section>
+
+        <!-- REFERENCES Section -->
+        <section id="references">
+            <h2>10. REFERENCES</h2>
+            <ul>
+                <li>Flask Documentation: <a href="https://flask.palletsprojects.com/"
+                        target="_blank">https://flask.palletsprojects.com/</a></li>
+                <li>PyMySQL Documentation: <a href="https://pymysql.readthedocs.io/"
+                        target="_blank">https://pymysl.readthedocs.io/</a></li>
+                <li>MySQL Documentation: <a href="https://dev.mysql.com/doc/"
+                        target="_blank">https://dev.mysql.com/doc/</a></li>
+                <li>Jinja2 Documentation: <a href="https://jinja.palletsprojects.com/"
+                        target="_blank">https://jinja.palletsprojects.com/</a></li>
+                <li>Flask-Mail Documentation: <a href="https://pythonhosted.org/Flask-Mail/"
+                        target="_blank">https://pythonhosted.org/Flask-Mail/</a></li>
+                <li>HTML/CSS/JavaScript References: MDN Web Docs (<a href="https://developer.mozilla.org/"
+                        target="_blank">https://developer.mozilla.org/</a>)</li>
+                <li>Python `datetime` Module: <a href="https://docs.python.org/3/library/datetime.html"
+                        target="_blank">https://docs.python.org/3/library/datetime.html</a></li>
+                <li>Python `re` Module: <a href="https://docs.python.org/3/library/re.html"
+                        target="_blank">https://docs.python.org/3/library/re.html</a></li>
+                <li>Aiven (Database Hosting): <a href="https://aiven.io/" target="_blank">https://aiven.io/</a></li>
+                <li>Render (Deployment Platform): <a href="https://render.com/" target="_blank">https://render.com/</a>
+                </li>
+                <li>GitHub Repository: <a href="https://github.com/ramanoli-1309/University-Management-System.git"
+                        target="_blank">https://github.com/ramanoli-1309/University-Management-System.git</a></li>
+                <li>Live Application URL: <a href="https://university-management-system-xvfp.onrender.com/"
+                        target="_blank">https://university-management-system-xvfp.onrender.com/</a></li>
+            </ul>
+        </section>
+
+        <section class="file-list">
+            <h1>Documents</h1>
+            <ul>
+                {% for file in documentation_files %}
+                <li>
+                    <img src="{{ url_for('static', filename='images/' + file[0] + '.png') }}" alt="File Icon">
+
+                    <a href="{{ url_for('static', filename='files/' + file[1]) }}">{{ file[1] }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div> <!-- end report-container -->
+    <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+
+</html>

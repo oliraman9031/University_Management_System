@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/signin_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
+    <title>Sign In</title>
+    <style>
+        nav {
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/">Home</a></li>
+            <li><a href="/aboutme">About</a></li>
+            <li><a href="documentations">Documentations</a></li>
+            <li><a href="/signin" class="active">Sign In</a></li>
+            <li><a href="/signup">Sign Up</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h2>Sign In</h2>
+        <form action="/login_user" method="POST">
+            <div class="form-group">
+                <label for="email">Official Mail</label>
+                <input type="text" id="email" name="email" value="{{ email }}">
+                {% if email_error %}
+                <div class="error">{{ email_error }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password">
+                {% if password_error %}
+                <div class="error">{{ password_error }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="user-type">User Type</label>
+                <select id="user-type" name="user-type">
+                    <option value="" selected disabled>Select</option>
+                    <option value="admin" {% if userType=='admin' %}selected{% endif %}>Admin</option>
+                    <option value="student" {% if userType=='student' %}selected{% endif %}>Student</option>
+                    <option value="faculty" {% if userType=='faculty' %}selected{% endif %}>Faculty</option>
+                </select>
+                {% if user_type_error %}
+                <div class="error">{{ user_type_error }}</div>
+                {% endif %}
+            </div>
+            {% if credentials_error %}
+            <div class="error">{{ credentials_error }}</div>
+            {% endif %}
+            <button type="submit">Sign In</button>
+        </form>
+        <a href="/register" class="register-link">Not registered? Register</a>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+            <p>&copy; 2026  University Management System</p>
+            <p>Developed and Designed by Raman Oli</p>
+    
+        </footer>
+    </div>
+</body>
+<script>
+    setTimeout(function () {
+        var successMessage = document.querySelector('.success');
+        var errorMessages = document.querySelectorAll('.error');
+        var queryMessages = document.querySelectorAll('.query');
+
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+
+        errorMessages.forEach(function (error) {
+            error.style.display = 'none';
+        });
+
+        queryMessages.forEach(function (query) {
+            query.style.display = 'none';
+        });
+    }, 3000);
+</script>
+
+</html>

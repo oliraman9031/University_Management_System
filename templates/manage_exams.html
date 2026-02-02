@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1].upper()) }} | Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/departments">Courses</a></li>
+            <li><a href="/admin/exams" class="active">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/faculty">Faculty</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/admin/logs" >Logs</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if query %}
+        <h1 class="query">{{ query }}</h1>
+        {% endif %}
+
+        {% if queries %}
+        {% for query in queries %}
+        <h1 class="query">{{ queries[query] }}</h1>
+        {% endfor %}
+        {% endif %}
+        {% if message_success %}
+        <h1 class="success">{{ message_success }}</h1>
+        {% endif %}
+        {% if message_danger %}
+        <h1 class="error">{{ message_danger }}</h1>
+        {% endif %}
+        {% if errors %}
+        {% for error in errors %}
+        <h1 class="error">{{ errors[error] }}</h1>
+        {% endfor %}
+        {% endif %}
+        {% if upcoming_exams %}
+        <h1>Upcoming Exams</h1>
+        <table>
+            <tr>
+                <th>Exam ID</th>
+                <th>Course ID</th>
+                <th>Exam Date</th>
+                <th>Exam Duration</th>
+                <th>Exam Type</th>
+                <th>Venue</th>
+                <th>Course Name</th>
+                <th>Credits</th>
+                <th>Actions</th>
+            </tr>
+            {% for exam in upcoming_exams %}
+            <form action="/admin/exams/update_exam/{{exam[0]}}/" method="POST">
+                <td><input type="text" name="exam_id_{{exam[0]}}" id="exam_id_{{exam[0]}}" value="{{exam[0]}}"
+                        class="formattedInput"></td>
+                <td><input type="text" name="course_id_{{exam[0]}}" id="course_id_{{exam[0]}}" value="{{exam[1]}}"
+                        class="formattedInput" readonly></td>
+                <td><input type="date" name="exam_date_{{exam[0]}}" id="exam_date_{{exam[0]}}" value="{{exam[2]}}"
+                        class="formattedInput"></td>
+                <td><input type="number" step="0.1" name="exam_duration_{{exam[0]}}" id="exam_duration_{{exam[0]}}"
+                        value="{{exam[3]}}" class="formattedInput"></td>
+                <td>
+                    <select class="select" name="exam_type_{{exam[0]}}" id="exam_type_{{exam[0]}}">
+                        <option value="" selected disabled>Select</option>
+                        <option value="Mid Semester Test" {% if exam[4]=="Mid Semester Test" %}selected disabled {%
+                            endif %}>Mid Semester Test</option>
+                        <option value="End Semester Test" {% if exam[4]=="End Semester Test" %}selected disabled{% endif
+                            %}>End Semester Test</option>
+                        <option value="Quiz-1" {% if exam[4]=="Quiz-1" %}selected disabled{% endif %}>Quiz-1</option>
+                        <option value="Quiz-2" {% if exam[4]=="Quiz-2" %}selected disabled{% endif %}>Quiz-2</option>
+                        <option value="Lab Evaluation I" {% if exam[4]=="Lab Evaluation I" %}selected disabled{% endif
+                            %}>Lab Evaluation I</option>
+                        <option value="Lab Evaluation II" {% if exam[4]=="Lab Evaluation II" %}selected disabled{% endif
+                            %}>Lab Evaluation II</option>
+                        <option value="Others" {% if exam[4]=="Others" %}selected disabled{% endif %}>Others</option>
+                    </select>
+                <td><input type="text" name="venue_{{exam[0]}}" id="venue_{{exam[0]}}" value="{{exam[5]}}"
+                        class="formattedInput"></td>
+                <td><input type="text" name="course_name_{{exam[0]}}" id="course_name_{{exam[0]}}" value="{{exam[7]}}"
+                        class="formattedInput" readonly></td>
+                <td><input type="text" name="credits_{{exam[0]}}" id="credits_{{exam[0]}}" value="{{exam[8]}}"
+                        class="formattedInput" readonly></td>
+                <td>
+                    <button type="submit" class="btn-submit" name="edit" value="{{exam[0]}}">update</button>
+                    <a href="{{ url_for('delete_exam_admin', exam_id=exam[0]) }}" class="btn-danger">Delete</a>
+                </td>
+                </tr>
+            </form>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% if recent_Unevaluated_exams %}
+        <h1>Recent Exams</h1>
+        <table>
+            <tr>
+                <th>Exam ID</th>
+                <th>Course ID</th>
+                <th>Exam Date</th>
+                <th>Exam Duration</th>
+                <th>Exam Type</th>
+                <th>Venue</th>
+                <th>Course Name</th>
+                <th>Credits</th>
+                <th>Actions</th>
+            </tr>
+            {% for exam in recent_Unevaluated_exams %}
+            <tr>
+                <td>{{ exam[0] }}</td>
+                <td>{{ exam[1] }}</td>
+                <td>{{ exam[2] }}</td>
+                <td>{{ exam[3] }}</td>
+                <td>{{ exam[4] }}</td>
+                <td>{{ exam[5] }}</td>
+                <td>{{ exam[7] }}</td>
+                <td>{{ exam[8] }}</td>
+                <td>
+                    <a href="{{ url_for('delete_exam_admin', exam_id=exam[0]) }}" class="btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% if recent_Evaluated_exams %}
+        <h1>Evaluated Exams</h1>
+        <table>
+            <tr>
+                <th>Exam ID</th>
+                <th>Course ID</th>
+                <th>Exam Date</th>
+                <th>Exam Duration</th>
+                <th>Exam Type</th>
+                <th>Venue</th>
+                <th>Course Name</th>
+                <th>Credits</th>
+                <th>Actions</th>
+            </tr>
+            {% for exam in recent_Evaluated_exams %}
+            <tr>
+                <td>{{ exam[0] }}</td>
+                <td>{{ exam[1] }}</td>
+                <td>{{ exam[2] }}</td>
+                <td>{{ exam[3] }}</td>
+                <td>{{ exam[4] }}</td>
+                <td>{{ exam[5] }}</td>
+                <td>{{ exam[7] }}</td>
+                <td>{{ exam[8] }}</td>
+                <td>
+
+                    <a href="{{ url_for('view_results_admin', exam_id=exam[0]) }}" class="btn-submit">view</a>
+                    <a href="{{ url_for('delete_exam_admin', exam_id=exam[0]) }}" class="btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% if not upcoming_exams and not recent_Unevaluated_exams and not recent_Evaluated_exams %}
+        <h1>No Exams Found</h1>
+        {% endif %}
+    </main>
+    <footer>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+            <p>© 2026 University Management System</p>
+            <p>Developed and Designed by Raman Oli</p>
+        </footer>
+</body>
+
+</html>

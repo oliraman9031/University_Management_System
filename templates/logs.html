@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Result Evaluation</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/courses">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/faculty">Faculty</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/admin/logs" class="active">Logs</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if query %}
+        <h1 class="query">{{ query }}</h1>
+        {% endif %}
+        {% if logs %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Audit ID</th>
+                    <th>Event Type</th>
+                    <th>Table Name</th>
+                    <th>Event Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log[0] }}</td>
+                    <td>{{ log[1] }}</td>
+                    <td>{{ log[2] }}</td>
+                    <td>{{ log[3] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No logs found.</p>
+        {% endif %}
+    </main>
+    <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+
+</html>

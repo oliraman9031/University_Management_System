@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Faculty Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
+    <style>
+        /* Existing styles */
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav ul li a:hover,
+        nav ul li a.active {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1em;
+            text-align: left;
+        }
+
+        table thead tr {
+            background-color: #333;
+            color: #fff;
+        }
+
+        table th,
+        table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        /* New styles for the form */
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        form div {
+            margin-bottom: 15px;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        form input,
+        form select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        form button {
+            padding: 10px 15px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        form button:hover {
+            background-color: #555;
+        }
+
+        td input,
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 0px;
+            box-sizing: border-box;
+        }
+
+        td a {
+            padding: 0px 10px;
+            color: red;
+            text-decoration: none;
+        }
+
+        td button {
+            color: blue;
+            padding: 0px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #da2638;
+            padding: 5px;
+            margin: 20px 0;
+            border-left: 5px solid #f80019;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .no_enrollment_error {
+            background-color: #fff2f2;
+            color: #d32f2f;
+            text-align: center;
+            margin: 40px auto;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 6px solid #d32f2f;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 1.2em;
+            max-width: 800px;
+        }
+
+        .query {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/faculty/dashboard">Dashboard</a></li>
+            <li><a href="/faculty/exams" class="active">Exams</a></li>
+            <li><a href="/faculty/students">Students</a></li>
+            <li><a href="/faculty/results">Results</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if queries %}
+        {% for query in queries %}
+
+        <h1 class="query">{{ queries[query] }}</h1>
+        {% endfor %}
+        {% endif %}
+
+        {% if query %}
+        <h1 class="query">{{query}}</h1>
+        {%endif%}
+        {% if message_danger%}
+        <p class="error">{{message_danger}}</p>
+        {%endif%}
+        {% if message_success%}
+        <p class="success">{{message_success}}</p>
+        {%endif%}
+        {% if errors_update %}
+        {% for error in errors_update %}
+        <p class="error">{{errors_update[error]}}</p>
+        {%endfor%}
+        {%endif%}
+        {% if upcoming_exams %}
+        <h1>Upcoming Exams</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Course ID</th>
+                    <th>Exam Date</th>
+                    <th>Exam Duration (hr.)</th>
+                    <th>Exam Type</th>
+                    <th>Venue</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in upcoming_exams %}
+                <form action="/faculty/exams/update/{{ exam[0] }}" method="post">
+                    <tr>
+                        <td><input type="text" name="course_id_{{ exam[0] }}" id="course_id_{{ exam[0] }}"
+                                value="{{ exam[1] }}" readonly></td>
+                        <td><input type="date" name="exam_date_{{ exam[0] }}" id="exam_date_{{ exam[0] }}"
+                                value="{{ exam[2] }}"></td>
+                        <td><input type="number" step='0.1' name="exam_duration_{{ exam[0] }}"
+                                id="exam_duration_{{ exam[0] }}" value="{{ exam[3] }}"> </td>
+                        <td>
+                            <select name="exam_type_{{ exam[0] }}" id="exam_type_{{ exam[0] }}">
+                                <option value="" {% if exam[4]=='' %}selected disabled{% endif %}>Select</option>
+                                <option value="Mid Semester Test" {% if exam[4]=='Mid Semester Test' %}selected disabled
+                                    {%endif %}>Mid Semester Test</option>
+                                <option value="End Semester Test" {% if exam[4]=='End Semester Test' %}selected
+                                    disabled{% endif %}>End Semester Test</option>
+                                <option value="Quiz-1" {% if exam[4]=='Quiz-1' %}selected disabled{% endif %}>Quiz-1
+                                </option>
+                                <option value="Quiz-2" {% if exam[4]=='Quiz-2' %}selected disabled{% endif %}>Quiz-2
+                                </option>
+                                <option value="Lab Evaluation I" {% if exam[4]=='Lab Evaluation I' %}selected disabled{%
+                                    endif %}>Lab Evaluation I</option>
+                                <option value="Lab Evaluation II" {% if exam[4]=='Lab Evaluation II' %}selected
+                                    disabled{% endif %}>Lab Evaluation II</option>
+                                <option value="Others" {% if exam[4]=='Others' %}selected disabled{% endif %}>Others
+                                </option>
+                            </select>
+                        </td>
+                        <td><input type="text" name="exam_venue_{{ exam[0] }}" id="exam_venue{{ exam[0] }}"
+                                value="{{ exam[5] }}"></td>
+                        <td>
+                            <button type="submit">Update</button>
+                            <a href="/faculty/exams/delete/{{ exam[0] }}">Delete</a>
+                        </td>
+
+                    </tr>
+                </form>
+                {% endfor %}
+                {% if type_error_update%}
+                <tr>
+                    <td colspan="6">{{type_error_update}}</td>
+                </tr>
+                {%endif%}
+                {% if venue_error_update%}
+                <tr>
+                    <td colspan="6">{{venue_error_update}}</td>
+                </tr>
+                {%endif%}
+                {% if date_error_update%}
+                <tr>
+                    <td colspan="6">{{date_error_update}}</td>
+                </tr>
+                {%endif%}
+                {% if duration_error_update%}
+                <tr>
+                    <td colspan="6">{{duration_error_update}}</td>
+                </tr>
+                {%endif%}
+                {% if exist_error_update%}
+                <tr>
+                    <td colspan="6">{{exist_error_update}}</td>
+                </tr>
+                {%endif%}
+
+
+
+
+
+            </tbody>
+        </table>
+        {% endif %}
+        {%if message %}
+        <p class="success">{{ message }}</p>
+        {% endif %}
+        {% if exist_error_update %}
+        <p class="error">{{ exist_error_update }}</p>
+        {% endif %}
+        {% if not no_enrollment %}
+        <h1>Schedule Exam</h1>
+        <form action="/faculty/exams/add" method="post">
+            <div>
+                <label for="course_id">Course ID</label>
+                <input type="text" id="course_id" name="course_id" value="{{session['user'][9]}}" readonly>
+            </div>
+            <div>
+                <label for="exam_date">Exam Date</label>
+                <input type="date" id="exam_date" name="exam_date" value="{% if exam_date %}{{ exam_date }}{% endif %}">
+                {% if date_error %}
+                <p class="error">{{ date_error }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="exam_duration">Exam Duration (hours)</label>
+                <input type="number" step="0.1" id="exam_duration" name="exam_duration"
+                    value="{% if exam_duration %}{{ exam_duration }}{% endif %}">
+                {% if duration_error %}
+                <p class="error">{{ duration_error }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="exam_charge">Exam Charge</label>
+                <input type="number" step="1" id="exam_charge" name="exam_charge"
+                    value="{% if exam_charge %}{{ exam_charge }}{% endif %}">
+                {% if charge_error %}
+                <p class="error">{{ charge_error }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="exam_type">Exam Type</label>
+                <select id="exam_type" name="exam_type">
+                    <option value="" selected disabled>Select</option>
+                    <option value="Mid Semester Test" {% if exam_type=='Mid Semester Test' %}selected{% endif %}>Mid
+                        Semester Test</option>
+                    <option value="End Semester Test" {% if exam_type=='End Semester Test' %}selected{% endif %}>End
+                        Semester Test</option>
+                    <option value="Quiz-1" {% if exam_type=='Quiz-1' %}selected{% endif %}>Quiz-1</option>
+                    <option value="Quiz-2" {% if exam_type=='Quiz-2' %}selected{% endif %}>Quiz-2</option>
+                    <option value="Lab Evaluation I" {% if exam_type=='Lab Evaluation I' %}selected{% endif %}>Lab
+                        Evaluation I</option>
+                    <option value="Lab Evaluation II" {% if exam_type=='Lab Evaluation II' %}selected{% endif %}>Lab
+                        Evaluation II</option>
+                    <option value="Others" {% if exam_type=='Others' %}selected{% endif %}>Others</option>
+                </select>
+                {% if type_error %}
+                <p class="error">{{ type_error }}</p>
+                {% endif %}
+                {% if exist_error %}
+                <p class="error">{{ exist_error }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="venue">Venue</label>
+                <input type="text" id="venue" name="venue" value="{% if venue %}{{ venue }}{% endif %}">
+                {% if venue_error %}
+                <p class="error">{{ venue_error }}</p>
+                {% endif %}
+            </div>
+            <button type="submit">Schedule</button>
+        </form>
+        {% else %}
+        <h1 class="no_enrollment_error">No Students are enrolled. Therefore, can't schedule exam.</h1>
+        {% endif %}
+        {% if recent_exams %}
+        <h1>Recent Exams</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Course ID</th>
+                    <th>Exam Date</th>
+                    <th>Exam Duration</th>
+                    <th>Exam Type</th>
+                    <th>Venue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in recent_exams %}
+                <tr>
+                    <td>{{ exam[1] }}</td>
+                    <td>{{ exam[2] }}</td>
+                    <td>{{ exam[3] }} hours</td>
+                    <td>{{ exam[4] }}</td>
+                    <td>{{ exam[5] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </main>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+<script>
+    setTimeout(function () {
+        var successMessage = document.querySelector('.success');
+        var errorMessages = document.querySelectorAll('.error');
+        var queryMessages = document.querySelectorAll('.query');
+
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+
+        errorMessages.forEach(function (error) {
+            error.style.display = 'none';
+        });
+
+        queryMessages.forEach(function (query) {
+            query.style.display = 'none';
+        });
+    }, 3000);
+</script>
+
+</html>

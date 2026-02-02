@@ -1,0 +1,89 @@
+.registration {
+    width: 50%;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.registration form div {
+    margin-bottom: 15px;
+}
+
+.registration label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+}
+
+.registration input[type="text"],
+.registration input[type="email"],
+.registration input[type="password"],
+.registration select,
+.registration input[type="date"] {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 10px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 16px;
+}
+
+.registration input[type="text"]::placeholder,
+.registration input[type="email"]::placeholder,
+.registration input[type="password"]::placeholder {
+    color: #aaa;
+}
+
+.registration input[type="text"]:focus,
+.registration input[type="email"]:focus,
+.registration input[type="password"]:focus,
+.registration select:focus,
+.registration input[type="date"]:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+.registration form div div {
+    display: flex;
+    gap: 10px;
+}
+
+.registration form div div input {
+    flex: 1;
+}
+
+.registration button {
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.registration button:hover {
+    background-color: #45a049;
+}
+
+.registration p {
+    text-align: center;
+    font-size: 16px;
+}
+
+.registration p a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+.registration p a:hover {
+    text-decoration: underline;
+}

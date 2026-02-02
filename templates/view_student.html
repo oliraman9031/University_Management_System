@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ session.user[1].upper() }} | Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
+    <style>
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav ul li a:hover,
+        nav ul li a.active {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 13px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+
+        .reject {
+            background-color: #DC3545;
+            /* A Bootstrap-like red */
+        }
+
+        .restrict {
+            background-color: #FFC107;
+            /* A warning yellow */
+            color: #000;
+            /* Ensure text is readable on yellow */
+        }
+
+        .graduate {
+            background-color: #28A745;
+            /* A success green */
+        }
+
+        .approve {
+            background-color: #17A2B8;
+            /* A teal color */
+        }
+
+        .query {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #da2638;
+            padding: 5px;
+            margin: 20px 0;
+            border-left: 5px solid #f80019;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students" class="active">Students</a></li>
+            <li><a href="/admin/courses">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if query%}
+        <h1 class="query">{{query}}</h1>
+        {%endif%}
+
+        {% if queries %}
+        {%for query in queries%}
+        <h1 class="query">{{queries[query]}}</h1>
+        {%endfor%}
+        {%endif%}
+
+        {% if message_danger %}
+        <h1 class="error">{{message_danger}}</h1>
+        {%endif%}
+        {% if student %}
+        <h1>Student Details</h1>
+        <table>
+            <tr>
+                <th>Student ID</th>
+                <td>{{ student[0] }}</td>
+            </tr>
+            <tr>
+                <th>First Name</th>
+                <td>{{ student[1] }}</td>
+            </tr>
+            <tr>
+                <th>Middle Name</th>
+                <td>{{ student[2] }}</td>
+            </tr>
+            <tr>
+                <th>Last Name</th>
+                <td>{{ student[3] }}</td>
+            </tr>
+            <tr>
+                <th>Street</th>
+                <td>{{ student[4] }}</td>
+            </tr>
+            <tr>
+                <th>District</th>
+                <td>{{ student[5] }}</td>
+            </tr>
+            <tr>
+                <th>State</th>
+                <td>{{ student[6] }}</td>
+            </tr>
+            <tr>
+                <th>Country</th>
+                <td>{{ student[7] }}</td>
+            </tr>
+            <tr>
+                <th>Gender</th>
+                <td>{{ student[8] }}</td>
+            </tr>
+            <tr>
+                <th>Date Of Birth</th>
+                <td>{{ student[9] }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ student[10] }}</td>
+            </tr>
+            <tr>
+                <th>College Email</th>
+                <td>{{ student[11] }}</td>
+            </tr>
+            <tr>
+                <th>Phone No.</th>
+                <td>{{ contacts | map(attribute=0) | join(', ') }}</td>
+            </tr>
+            <tr>
+                <th>Enrollment Year</th>
+                <td>{{ student[13] }}</td>
+            </tr>
+            <tr>
+                <th>Expected Graduation Year</th>
+                <td>
+                    {% if student[-1] == 'Enrolled' %}
+                    {{ student[14] }}
+                    {% elif student[-1] == 'Restricted' %}
+                    Student has been restricted / terminated for an undefined period
+                    {% elif student[-1] == 'Graduated' %}
+                    Student has graduated
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th>Action</th>
+                {% if student[-1] == 'Enrolled' %}
+                <td>
+                    <a class="graduate" href="/admin/graduate_student/{{ student[0] }}">Graduate</a>
+                    <a class="restrict" href="/admin/restrict_student/{{ student[0] }}">Restrict</a>
+                    <a class="reject" href="/admin/reject_student/{{ student[0] }}">Remove</a>
+
+                </td>
+                {% elif student[-1] == 'Graduated' %}
+                <td>
+                    <a class="reject" href="/admin/reject_student/{{ student[0] }}">Delete</a>
+                </td>
+                {% elif student[-1] == 'Restricted' %}
+                <td>
+                    <a class="approve" href="/admin/approve_student/{{ student[0] }}">Remove Restriction</a>
+                    <a class="reject" href="/admin/reject_student/{{ student[0] }}">Delete</a>
+                </td>
+                {% else %}
+                <td>
+                    <a class="approve" href="/admin/approve_student/{{ student[0] }}">approve</a>
+                    <a class="reject" href="/admin/restrict_student/{{ student[0] }}">Reject</a>
+
+                </td>
+                {% endif %}
+            </tr>
+
+        </table>
+        {% endif %}
+
+        {%if courses%}
+        <h1>Enrolled Courses</h1>
+        <table>
+            <tr>
+                <th>Course ID</th>
+                <th>Course Name</th>
+                <th>Department</th>
+                <th>Semester</th>
+                <th>Enrolled On</th>
+                {% if student[-1] != 'Graduated' %}
+                <th>Action</th>
+                {% endif %}
+            </tr>
+            {% for course in courses %}
+            <tr>
+                <td>{{ course[0] }}</td>
+                <td>{{ course[1] }}</td>
+                <td>{{ course[2] }}</td>
+                <td>{{ course[3] }}</td>
+                <td>{{ course[4] }}</td>
+                {% if student[-1] != 'Graduated' %}
+                <td>
+                    <a class="reject" href="/admin/view_student/{{student[0]}}/UnEnroll/{{course[0]}}">UnEnroll</a>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </table>
+    </main>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+    <script>
+        setTimeout(function () {
+            var successMessage = document.querySelector('.success');
+            var errorMessages = document.querySelectorAll('.error');
+            var queryMessages = document.querySelectorAll('.query');
+
+            if (successMessage) {
+                successMessage.style.display = 'none';
+            }
+
+            errorMessages.forEach(function (error) {
+                error.style.display = 'none';
+            });
+
+            queryMessages.forEach(function (query) {
+                query.style.display = 'none';
+            });
+        }, 3000);
+    </script>
+</body>
+
+</html>

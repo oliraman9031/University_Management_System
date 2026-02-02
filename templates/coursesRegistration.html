@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Management System - Course Registration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            background-color: #333;
+            padding: 0;
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        nav ul li {
+            margin: 0;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 20px;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        nav ul li a:hover,
+        nav ul li a.active {
+            background-color: #555;
+            color: #fff;
+        }
+
+        main {
+            padding: 30px;
+            background-color: #fff;
+            margin: 30px auto;
+            max-width: 800px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #555;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        form label {
+            margin: 12px 0 5px;
+            font-weight: 600;
+            color: #444;
+        }
+
+        form input,
+        form select {
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border 0.3s ease;
+        }
+
+        form input:focus,
+        form select:focus {
+            border-color: #555;
+            outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        form button {
+            padding: 12px;
+            background-color: #555;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #2980b9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 16px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        table th,
+        table td {
+            padding: 15px;
+            border: none;
+        }
+
+        table th {
+            background-color: #555;
+            color: #fff;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        table tr {
+            border-bottom: 1px solid #f2f2f2;
+            text-align: center;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        table td a {
+            color: #e74c3c;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        table td a:hover {
+            color: #c0392b;
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px 0;
+            background-color: #333;
+            color: #fff;
+            position: unset;
+            width: 100%;
+            bottom: 0;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #courseOptions {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+
+        #courseOptions div {
+            margin: 10px 0;
+        }
+
+        #courseOptions input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #da2638;
+            padding: 5px;
+            margin: 20px 0;
+            border-left: 5px solid #f80019;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .query {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">UMS</a></li>
+                <li><a href="/student/dashboard">Dashboard</a></li>
+                <li><a href="/student/courses" class="active">Courses</a></li>
+                <li><a href="/student/results">Results</a></li>
+                <li><a href="/student/fees">Fees</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+
+
+        {% if query %}
+        <h1 class="query">{{ query }}</h1>
+        {% endif %}
+        {% if queries %}
+        {% for query in queries %}
+        <h1 class="query">{{ queries[query] }}</h1>
+        {% endfor %}
+        {% endif %}
+        {%if message_enrolled %}
+        <h1 class="success">{{message_enrolled}}</h1>
+        {%endif%}
+        {%if message_deleted%}
+        <h1 class="error">{{message_deleted}}</h1>
+        {%endif%}
+        <h2>Registered Courses</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Credits</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if regeistered_courses %}
+                {% for course in regeistered_courses %}
+                <tr>
+                    <td>{{ course[0] }}</td>
+                    <td>{{ course[1] }}</td>
+                    <td>{{ course[2] }}</td>
+                    <td>
+                        <a href="/student/courses/{{session.user[0]}}/unenroll/{{course[0]}}">Unenroll</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center;">No courses registered yet</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        {% if registered_courses | length != courses | length %}
+        
+        <h2>Course Registration</h2>
+        <form action="/student/register" method="post">
+
+            <label for="studentId">Student ID:</label>
+            <input type="text" id="studentId" name="studentId" value="{{session.user[0]}}" readonly>
+
+            <label for="semester">Semester</label>
+            <select id="semester" name="semester" required onchange="updateCourses()">
+                <option value="">Select Semester</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+
+            <div id="courseOptions">
+                <!-- Course options will be dynamically inserted here -->
+            </div>
+
+            <label for="courseCode">Course Code:</label>
+            <input type="text" id="courseCode" name="courseCode" readonly>
+
+            <label for="credits">Credits:</label>
+            <input type="text" id="credits" name="credits" readonly>
+
+            <button type="submit">Register</button>
+        </form>
+        {% else %}
+        <h1 class="success">All Courses offered by this University is enrolled</h1>
+        {% endif %}
+    </main>
+    <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+    <script>
+        const courses = {{ courses | tojson}};
+        console.log(courses);
+
+        function updateCourses() {
+            const semester = document.getElementById('semester').value;
+            const courseOptions = document.getElementById('courseOptions');
+            courseOptions.innerHTML = '';
+
+            if (courses[semester]) {
+                courses[semester].forEach(course => {
+                    const courseDiv = document.createElement('div');
+                    courseDiv.innerHTML = `
+                        <input type="checkbox" id="${course.code}" name="course" value="${course.code}" onclick="selectCourse('${course.code}', ${course.credits}, this)">
+                        <label for="${course.code}">${course.name}</label>
+                    `;
+                    courseOptions.appendChild(courseDiv);
+                });
+            }
+        }
+
+        function selectCourse(courseCode, credits, checkbox) {
+            let courseCodeField = document.getElementById('courseCode');
+            let creditsField = document.getElementById('credits');
+
+            let courseCodes = courseCodeField.value ? courseCodeField.value.split(',') : [];
+            let creditValues = creditsField.value ? creditsField.value.split(',') : [];
+
+            if (checkbox.checked) {
+                courseCodes.push(courseCode);
+                creditValues.push(credits);
+            } else {
+                courseCodes = courseCodes.filter(code => code !== courseCode);
+                creditValues = creditValues.filter(credit => credit !== credits.toString());
+            }
+
+            courseCodeField.value = courseCodes.join(',');
+            creditsField.value = creditValues.join(',');
+        }
+        setTimeout(function () {
+            var successMessage = document.querySelector('.success');
+            var errorMessages = document.querySelectorAll('.error');
+            var queryMessages = document.querySelectorAll('.query');
+
+            if (successMessage) {
+                successMessage.style.display = 'none';
+            }
+
+            errorMessages.forEach(function (error) {
+                error.style.display = 'none';
+            });
+
+            queryMessages.forEach(function (query) {
+                query.style.display = 'none';
+            });
+        }, 3000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Management System | Home</title>
+    <!-- Link shared styles first -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <!-- Link specific landing page styles -->
+    <!-- Optionally link index_style.css if it ONLY contains nav/footer -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}"> -->
+<style>
+    /* static/css/landing_page_style.css */
+
+:root {
+    --primary-color: #4a69bd; /* A nice blue */
+    --secondary-color: #6a89cc;
+    --accent-color: #ff6b6b; /* Coral accent */
+    --light-bg: #f8f9fa;
+    --dark-text: #343a40;
+    --light-text: #ffffff;
+    --card-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    /* Reset body styles potentially set by index_style.css if it's linked */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* More modern font */
+    background-color: var(--light-bg);
+    color: var(--dark-text);
+    line-height: 1.7;
+    margin: 0; /* Ensure no default margin */
+    padding-top: 60px; /* Account for fixed nav */
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: var(--light-text);
+    text-align: center;
+    padding: 80px 20px 60px 20px; /* More padding */
+    margin-bottom: 40px;
+    position: relative; /* For potential pseudo-elements */
+}
+
+.hero h1 {
+    font-size: 2.8em; /* Larger heading */
+    margin-bottom: 15px;
+    font-weight: 700;
+    color: var(--light-text); /* Ensure hero heading is light */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+}
+
+.hero p {
+    font-size: 1.2em;
+    max-width: 700px;
+    margin: 0 auto 30px auto; /* Center paragraph */
+    line-height: 1.6;
+}
+
+/* Style flash messages if they appear in the hero */
+.hero .success, .hero .error {
+    width: 80%;
+    margin: 20px auto;
+    color: var(--dark-text); /* Make text readable */
+    font-weight: 500;
+}
+.hero .success {
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+    border-left-width: 5px;
+}
+.hero .error {
+     background-color: #f8d7da;
+     border-color: #f5c2c7;
+     border-left-width: 5px;
+}
+
+
+/* Content Sections */
+.content-section {
+    max-width: 1100px;
+    margin: 50px auto;
+    padding: 40px 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    text-align: center;
+}
+
+.content-section h2 {
+    font-size: 2.2em;
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    position: relative;
+    display: inline-block; /* Allows centering and pseudo-element */
+}
+
+/* Underline effect for section titles */
+.content-section h2::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background-color: var(--accent-color);
+    margin: 10px auto 0; /* Center the underline */
+}
+
+.content-section p {
+    font-size: 1.1em;
+    color: #555;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Features Section - Grid Layout */
+#features .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+    gap: 30px;
+    margin-top: 40px;
+    text-align: left; /* Reset text align for cards */
+}
+
+.feature-card {
+    background-color: var(--light-bg);
+    padding: 25px;
+    border-radius: 8px;
+    border-left: 5px solid var(--secondary-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.feature-card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+    font-size: 1.3em;
+}
+
+.feature-card p {
+    font-size: 1em;
+    color: #666;
+    margin: 0; /* Remove default p margin */
+}
+
+
+/* Call to Action Section */
+#cta {
+    background-color: var(--secondary-color); /* Use a theme color */
+    color: var(--light-text);
+    border-radius: 0; /* Full width feel if desired, or add radius */
+    box-shadow: none;
+    margin-top: 50px;
+    padding: 50px 20px;
+}
+
+#cta h2 {
+    color: var(--light-text); /* Override section title color */
+}
+#cta h2::after {
+    background-color: var(--light-text); /* White underline */
+}
+
+#cta p {
+    color: #eee; /* Lighter text on dark background */
+}
+
+.cta-buttons a {
+    display: inline-block;
+    margin: 15px 10px 0 10px;
+    padding: 12px 30px;
+    color: var(--dark-text); /* Dark text on light button */
+    text-decoration: none;
+    border-radius: 25px; /* Pill shape */
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 1.05em;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cta-buttons .signin {
+    background-color: #ffffff; /* White button */
+    border: 2px solid #ffffff;
+}
+.cta-buttons .signin:hover {
+    background-color: #f1f1f1;
+    transform: translateY(-2px);
+}
+
+.cta-buttons .signup {
+    background-color: var(--accent-color); /* Accent color */
+    color: var(--light-text); /* Light text on accent button */
+    border: 2px solid var(--accent-color);
+}
+ .cta-buttons .signup:hover {
+    background-color: #e55353;
+    transform: translateY(-2px);
+}
+
+/* Ensure main_style.css footer doesn't override too much */
+/* Footer styles might be in main_style.css, ensure they are applied */
+/* If index_style.css fixed footer causes issues, remove that line */
+</style>
+    <!-- Add Google Fonts (Optional) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+    <!-- Navigation (Uses styles from main_style.css or index_style.css) -->
+    <nav class="nav">
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/" class="active">Home</a></li>
+            <li><a href="/aboutme">About</a></li>
+            <li><a href="/documentations">Documentations</a></li>
+            <li><a href="/signin">Sign In</a></li>
+            <li><a href="/signup">Sign Up</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <h1>University Management System</h1>
+        <p>Efficiently managing academic life, connecting students, faculty, and administration seamlessly.</p>
+         {% if message_success %}
+         <p class="success">{{ message_success }}</p>
+         {% endif %}
+         {% if queries %}
+         {% for query in queries %}
+         <p class="query">{{queries[query]}}</p>
+         {% endfor %}
+         {% endif %}
+         {% if query %}
+         <p class="query">{{ query }}</p>
+         {% endif %}
+         {% if message_danger %}
+         <p class="error">{{ message_danger }}</p>
+         {% endif %}
+         <!-- Optional: Add a button here if desired -->
+         <!--
+         <div class="cta-buttons" style="margin-top: 20px;">
+             <a href="/signup" class="signup">Get Started</a>
+         </div>
+         -->
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <section id="about" class="content-section">
+            <h2>About UMS</h2>
+            <p>
+                The University Management System (UMS) is a robust, web-based platform designed to simplify and automate the complex administrative and academic operations within a university. It ensures data integrity, enhances communication, and provides easy access to essential information for everyone involved.
+            </p>
+        </section>
+
+        <section id="features" class="content-section">
+            <h2>Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <!-- Add icon here if available, e.g., <i class="fas fa-user-graduate"></i> -->
+                    <h3>Student Portal</h3>
+                    <p>Manage profiles, enroll in courses, view results, check schedules, and pay fees online.</p>
+                </div>
+                <div class="feature-card">
+                    <!-- <i class="fas fa-chalkboard-teacher"></i> -->
+                    <h3>Faculty Dashboard</h3>
+                    <p>Oversee assigned courses, manage exams, evaluate results, and view student lists.</p>
+                </div>
+                <div class="feature-card">
+                    <!-- <i class="fas fa-university"></i> -->
+                    <h3>Admin Control Panel</h3>
+                    <p>Comprehensive control over students, faculty, courses, departments, fees, and system settings.</p>
+                </div>
+                <div class="feature-card">
+                    <!-- <i class="fas fa-book-open"></i> -->
+                    <h3>Course Management</h3>
+                    <p>Add, update, or remove courses, assign faculty, and manage course details and credits.</p>
+                </div>
+                <div class="feature-card">
+                    <!-- <i class="fas fa-tasks"></i> -->
+                    <h3>Exam & Results</h3>
+                    <p>Schedule exams, manage evaluation statuses (Unevaluated, Evaluated, Locked), and publish results securely.</p>
+                </div>
+                <div class="feature-card">
+                    <!-- <i class="fas fa-dollar-sign"></i> -->
+                    <h3>Fee Management</h3>
+                    <p>Automated fee generation, online payment tracking, and status updates (Pending/Paid).</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="cta" class="content-section">
+            <h2>Ready to Get Started?</h2>
+            <p>
+                Log in to access your dashboard or register now to join the University Management System community.
+            </p>
+            <div class="cta-buttons">
+                <a href="/signin" class="signin">Sign In</a>
+                <a href="/signup" class="signup">Sign Up</a>
+            </div>
+        </section>
+    </main>
+
+    <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+    
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+</body>
+
+</html>

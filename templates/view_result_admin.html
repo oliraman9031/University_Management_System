@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Result Evaluation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/departments">Courses</a></li>
+            <li><a href="/admin/exams" class="active">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/faculty">faculty</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if queries %}
+        {% for query in queries %}
+        <h1 class="query">{{ queries[query] }}</h1>
+        {% endfor %}
+        {% endif %}
+        <h2>Evaluated</h2>
+        <p>Exam ID: {{ exam_id }}</p>
+        <p>Course ID: {{ session.user[-3] }}</p>
+        <p>Course Name: {{ course[0] }}</p>
+        <p>Credits: {{ course[1] }}</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>S.No.</th>
+                    <th>Result ID</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Obtained Marks</th>
+                    <th>Grade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set count = 0 %}
+                {% for result in results %}
+                {% set count = count + 1 %}
+                <tr>
+                    <td>{{ loop.index0 +1 }}</td>
+                    {% for i in range(result|length) %}
+                    <td>{{ result[i] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2025 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+
+</html>

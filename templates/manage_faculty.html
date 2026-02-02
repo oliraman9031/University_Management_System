@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1].upper()) }} | Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/courses">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/faculty" class="active">faculty</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/admin/logs" >Logs</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {%if query %}
+        <h1 class="query">{{query}}</h1>
+        {% endif %}
+        {% if queries %}
+        {% for q in queries %}
+        <h1 class="query">{{queries[q]}}</h1>
+        {% endfor %}
+        {% endif %}
+        {% if message_success %}
+        <h1 class="success">{{message_success}}</h1>
+        {% endif %}
+        {% if message_danger %}
+        <h1 class="error">{{message_danger}}</h1>
+        {% endif %}
+        {% if pending %}
+        <h2>Pending Applications</h2>
+        <table>
+            <tr>
+                <th>Application ID</th>
+                <th>Name</th>
+                <th>Applied On</th>
+                <th>Designation</th>
+                <th>Personal Mail</th>
+                <th>Work Mail</th>
+                <th>Course Name</th>
+                <th>Department</th>
+                <th>Action</th>
+            </tr>
+            {% for applicant in pending %}
+            <tr>
+                <td>{{ applicant[0] }}</td>
+                <td>{{ applicant[1] }}</td>
+                <td>{{ applicant[2] }}</td>
+                <td>{{ applicant[3] }}</td>
+                <td>{{ applicant[4] }}</td>
+                <td>{{ applicant[5] }}</td>
+                <td>{{ applicant[6] }}</td>
+                <td>{{ applicant[7] }}</td>
+                <td>
+                    <a class="view" href="/admin/faculty/view_faculty/{{ applicant[0]}}">View</a>
+                    <a class="approve" href="/admin/faculty/approve_faculty/{{ applicant[0] }}">Approve</a>
+                    <a class="reject" href="/admin/faculty/reject_faculty/{{ applicant[0] }}">Reject</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+        {% if active %}
+        <h2>Active Faculties</h2>
+        <table>
+            <tr>
+                <th>Application ID</th>
+                <th>Name</th>
+                <th>Applied On</th>
+                <th>Designation</th>
+                <th>Personal Mail</th>
+                <th>Work Mail</th>
+                <th>Course Name</th>
+                <th>Department</th>
+                <th>Action</th>
+            </tr>
+            {% for faculty in active %}
+            <tr>
+                <td>{{ faculty[0] }}</td>
+                <td>{{ faculty[1] }}</td>
+                <td>{{ faculty[2] }}</td>
+                <td>{{ faculty[3] }}</td>
+                <td>{{ faculty[4] }}</td>
+                <td>{{ faculty[5] }}</td>
+                <td>{{ faculty[6] }}</td>
+                <td>{{ faculty[7] }}</td>
+                <td>
+                    <a class="view" href="/admin/faculty/view_faculty/{{ faculty[0] }}">View</a>
+                    <a class="reject" href="/admin/faculty/delete_faculty/{{faculty[0]}}">
+                        Remove
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </main>
+    <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+
+</html>

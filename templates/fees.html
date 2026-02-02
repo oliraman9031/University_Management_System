@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav ul li a:hover,
+        nav ul li a.active {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #da2638;
+            padding: 5px;
+            margin: 20px 0;
+            border-left: 5px solid #f80019;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .query {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/student/dashboard">Dashboard</a></li>
+            <li><a href="/student/courses">Courses</a></li>
+            <li><a href="/student/results">Results</a></li>
+            <li><a href="/student/fees" class="active">Fees</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if query %}
+        <h1 class="query">{{ query }}</h1>
+        {% endif %}
+        {% if queries %}
+        {% for query in queries %}
+        <h1 class="query">{{ queries[query] }}</h1>
+        {% endfor %}
+        {% endif %}
+
+        {% if message_success %}
+        <h1 class="success">{{message_success}}</h1>
+        {% endif %}
+
+        {% if message_error %}
+        <h1 class="error">{{message_error}}</h1>
+        {% endif %}
+        {% if course_registration_fees_pending %}
+        <section>
+            <h1>Course Registration Fees Pending</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fee ID</th>
+                        <th>Course ID</th>
+                        <th>Course Name</th>
+                        <th>Amount</th>
+                        <th>Issued Date</th>
+                        <th>Type</th>
+                        <th>Payment ID</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in course_registration_fees_pending %}
+                    <tr>
+                        <td>{{ fee[0] }}</td>
+                        <td>{{ fee[1] }}</td>
+                        <td>{{ fee[2] }}</td>
+                        <td>{{ fee[3] }}</td>
+                        <td>{{ fee[4] }}</td>
+                        <td>{{ fee[5] }}</td>
+                        <form action="/student/fees/pay/{{fee[0]}}" method="post">
+                            <td>
+                                <input type="text" name="payment_id_{{fee[0]}}" placeholder="Enter Payment ID">
+                            </td>
+                            <td> <button type="submit">Pay Now</button></td>
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        {% if exam_fees_pending %}
+        <section>
+            <h1>Exam Fees Pending</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fee ID</th>
+                        <th>Student ID</th>
+                        <th>Exam ID</th>
+                        <th>Amount</th>
+                        <th>Issued Date</th>
+                        <th>Status</th>
+                        <th>Exam Type</th>
+                        <th>Course Name</th>
+                        <th>Course ID</th>
+                        <th>Payment ID</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in exam_fees_pending %}
+                    <tr>
+                        <td>{{ fee[0] }}</td>
+                        <td>{{ fee[1] }}</td>
+                        <td>{{ fee[2] }}</td>
+                        <td>{{ fee[3] }}</td>
+                        <td>{{ fee[4] }}</td>
+                        <td>{{ fee[5] }}</td>
+                        <td>{{ fee[6] }}</td>
+                        <td>{{ fee[7] }}</td>
+                        <td>{{ fee[8] }}</td>
+                        <form action="/student/fees/pay/{{fee[0]}}" method="post">
+                            <td>
+                                <input type="text" name="payment_id_{{fee[0]}}" placeholder="Enter Payment ID">
+                            </td>
+                            <td> <button type="submit">Pay Now</button></td>
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        {% if registration_fees_pending %}
+        <section>
+            <h1>Registration Fees Pending</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fee ID</th>
+                        <th>Student ID</th>
+                        <th>Amount</th>
+                        <th>Issued Date</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Payment ID</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in registration_fees_pending %}
+                    <tr>
+                        <td>{{ fee[0] }}</td>
+                        <td>{{ fee[1] }}</td>
+                        <td>{{ fee[2] }}</td>
+                        <td>{{ fee[3] }}</td>
+                        <td>{{ fee[4] }}</td>
+                        <td>{{ fee[5] }}</td>
+                        <form action="/student/fees/pay/{{fee[0]}}" method="post">
+                            <td>
+                                <input type="text" name="payment_id_{{fee[0]}}" placeholder="Enter Payment ID">
+                            </td>
+                            <td> <button type="submit">Pay Now</button></td>
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        {% if registration_fees_paid %}
+        <section>
+            <h1>Registration Fees Paid</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fee ID</th>
+                        <th>Student ID</th>
+                        <th>Amount</th>
+                        <th>Issued Date</th>
+                        <th>Payment Date</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in registration_fees_paid %}
+                    <tr>
+                        <td>{{ fee[0] }}</td>
+                        <td>{{ fee[1] }}</td>
+                        <td>{{ fee[2] }}</td>
+                        <td>{{ fee[3] }}</td>
+                        <td>{{ fee[4] }}</td>
+                        <td>{{ fee[5] }}</td>
+                        <td>{{ fee[6] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        {% if course_registration_fees_paid %}
+        <section>
+            <h1>Course Registration Fees Paid</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fee ID</th>
+                        <th>Course ID</th>
+                        <th>Course Name</th>
+                        <th>Amount</th>
+                        <th>Issued Date</th>
+                        <th>Payment Date</th>
+                        <th>Type</th>
+                        <th>Payment ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in course_registration_fees_paid %}
+                    <tr>
+                        <td>{{ fee[0] }}</td>
+                        <td>{{ fee[1] }}</td>
+                        <td>{{ fee[2] }}</td>
+                        <td>{{ fee[3] }}</td>
+                        <td>{{ fee[4] }}</td>
+                        <td>{{ fee[5] }}</td>
+                        <td>{{ fee[6] }}</td>
+                        <td>{{ fee[7] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        {% if exam_fees_paid %}
+        <section>
+            <h1>Exam Fees Paid</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fee ID</th>
+                        <th>Student ID</th>
+                        <th>Exam ID</th>
+                        <th>Amount</th>
+                        <th>Issued Date</th>
+                        <th>Payment Date</th>
+                        <th>Status</th>
+                        <th>Exam Type</th>
+                        <th>Course Name</th>
+                        <th>Course ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fee in exam_fees_paid %}
+                    <tr>
+                        <td>{{ fee[0] }}</td>
+                        <td>{{ fee[1] }}</td>
+                        <td>{{ fee[2] }}</td>
+                        <td>{{ fee[3] }}</td>
+                        <td>{{ fee[4] }}</td>
+                        <td>{{ fee[5] }}</td>
+                        <td>{{ fee[6] }}</td>
+                        <td>{{ fee[7] }}</td>
+                        <td>{{ fee[8] }}</td>
+                        <td>{{ fee[9] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+        {% if not course_registration_fees_pending and not course_registration_fees_paid and not exam_fees_pending and
+        not exam_fees_paid and not registration_fees_pending and not registration_fees_paid %}
+        <h1>No Fees available in database</h1>
+        {% endif %}
+    </main>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+<script>
+    setTimeout(function () {
+        var successMessage = document.querySelector('.success');
+        var errorMessages = document.querySelectorAll('.error');
+        var queryMessages = document.querySelectorAll('.query');
+
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+
+        errorMessages.forEach(function (error) {
+            error.style.display = 'none';
+        });
+
+        queryMessages.forEach(function (query) {
+            query.style.display = 'none';
+        });
+    }, 3000);
+</script>
+
+</html>

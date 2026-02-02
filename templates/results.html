@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Faculty Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
+    <style>
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav ul li a:hover,
+        nav ul li a.active {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .no_enrollment_error {
+            background-color: #fff2f2;
+            color: #d32f2f;
+            text-align: center;
+            margin: 40px auto;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 6px solid #d32f2f;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 1.2em;
+            max-width: 800px;
+        }
+
+        .query {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/faculty/dashboard">Dashboard</a></li>
+            <li><a href="/faculty/exams">Exams</a></li>
+            <li><a href="/faculty/students">Students</a></li>
+            <li><a href="/faculty/results" class="active">Results</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if query %}
+        <p class="query">{{query}}</p>
+        {% endif %}
+        {% if queries %}
+        {% for query in queries %}
+        <h1 class="query">{{queries[query]}}</h1>
+        {%endfor%}
+        {%endif%}
+        {% if message_success %}
+        <p class="success">{{message_success}}</p>
+        {% endif %}
+        {% if message_danger %}
+        <p class="success">{{message_danger}}</p>
+        {% endif %}
+        {% if exams_about_To_held %}
+        <h2>Upcoming Exams</h2>
+        <table>
+            <tr>
+                <th>Exam ID</th>
+                <th>Course ID</th>
+                <th>Exam Date</th>
+                <th>Exam Duration (hr.)</th>
+                <th>Exam Type</th>
+                <th>Exam Venue</th>
+            </tr>
+            {% for exam in exams_about_To_held %}
+            <tr>
+                <td>{{ exam[0] }}</td>
+                <td>{{ exam[1] }}</td>
+                <td>{{ exam[2] }}</td>
+                <td>{{ exam[3] }}</td>
+                <td>{{ exam[4] }}</td>
+                <td>{{ exam[5] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% if Exams_toEvaluate %}
+        <h2>Exams to Evaluate</h2>
+        <table>
+            <tr>
+                <th>Exam ID</th>
+                <th>Course ID</th>
+                <th>Exam Date</th>
+                <th>Exam Duration (hr.)</th>
+                <th>Exam Type</th>
+                <th>Exam Venue</th>
+                <th>Actions</th>
+            </tr>
+            {% for exam in Exams_toEvaluate %}
+            <tr>
+                <td>{{ exam[0] }}</td>
+                <td>{{ exam[1] }}</td>
+                <td>{{ exam[2] }}</td>
+                <td>{{ exam[3] }}</td>
+                <td>{{ exam[4] }}</td>
+                <td>{{ exam[5] }}</td>
+                <td><a href="/faculty/results/{{ exam[0] }}/evaluate">Evaluate</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+        {% if Locked_Result %}
+        <h2>Locked Results</h2>
+        <table>
+            <tr>
+                <th>Exam ID</th>
+                <th>Courese Name</th>
+                <th>Exam Date</th>
+                <th>Exam Duration ( hr.)</th>
+                <th>Exam Type</th>
+                <th>Venue</th>
+                <th>Action</th>
+            </tr>
+            {% for result in Locked_Result %}
+            <tr>
+                <td>{{ result[0] }}</td>
+                <td>{{ result[1] }}</td>
+                <td>{{ result[2] }}</td>
+                <td>{{ result[3] }}</td>
+                <td>{{ result[4] }}</td>
+                <td>{{ result[5] }}</td>
+                <td><a href="{{ url_for('view_results', exam_id=result[0]) }}">View Results</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {%if not Exams_toEvaluate and not Locked_Result %}
+        <h1 class="no_enrollment_error">No exams to evaluate or results to view.</h1>
+        {%endif%}
+    </main>
+    <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+<script>
+    setTimeout(function () {
+        var successMessage = document.querySelector('.success');
+        var errorMessages = document.querySelectorAll('.error');
+        var queryMessages = document.querySelectorAll('.query');
+
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+
+        errorMessages.forEach(function (error) {
+            error.style.display = 'none';
+        });
+
+        queryMessages.forEach(function (query) {
+            query.style.display = 'none';
+        });
+    }, 3000);
+</script>
+
+</html>

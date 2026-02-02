@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1].upper()) }} | Dashboard</title>
+        
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+    <style>
+        main {
+            padding-top: 60px;
+            padding-bottom: 40px;
+            margin: 20px auto;
+            width: 90%;
+        }
+
+
+        .btn-submit,
+        .btn-danger {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        .btn-submit {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background-color: #45a049;
+        }
+
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #da190b;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #333;
+            color: #fff;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            left: 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .query {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .appoint {
+            display: block;
+            margin: 0 auto;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .appoint:hover {
+            background-color: #45a049;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #da2638;
+            padding: 5px;
+            margin: 20px 0;
+            border-left: 5px solid #f80019;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/departments">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/faculty">faculty</a></li>
+            <li><a href="/admin/departments" class="active">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if query %}
+        <h1 class="query">{{query}}</h1>
+        {% endif %}
+        {% if queries %}
+        {% for query in queries %}
+        <h1 class="query">{{queries[query]}}</h1>
+        {% endfor %}
+        {% endif %}
+        {% if message_danger %}
+        <h1 class="error">{{message_danger}}</h1>
+        {% endif %}
+        {% if message_success_hod %}
+        <h1 class="success">{{message_success_hod}}</h1>
+        {% endif %}
+        <h2>Details</h2>
+        <table>
+            <tr>
+                <th>Department Code</th>
+                <th>Department Name</th>
+                <th>HOD ID</th>
+                <th>HOD Name</th>
+                <th>No. of faculty</th>
+                <th>Action</th>
+            </tr>
+            <tr>
+                <form action="/admin/departments/update/{{ department[0] }}" method="post">
+                    <td><input class="formattedInput" type="text" name="department_id" value="{{ department[0] }}"></td>
+                    <td><input class="formattedInput" type="text" name="department_name" value="{{ department[1] }}">
+                    </td>
+                    <td><input class="formattedInput" type="text" name="semester" value="{{ department[2] }}"></td>
+                    <td><input class="formattedInput" type="text" name="credits" value="{{ department[3] }}"></td>
+                    <td><input class="formattedInput" type="text" name="credits" value="{{ department[4] }}"></td>
+                    <td>
+                        <button type="submit" class="btn-submit">Update</button>
+                </form>
+                <form action="/admin/departments/delete/{{ department[0] }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn-danger">Delete</button>
+                </form>
+                </td>
+            </tr>
+        </table>
+
+        <h2>Faculties</h2>
+        {% if faculty_id_error %}
+        <h1 class="error">{{faculty_id_error}}</h1>
+        {% endif %}
+        {% if faculty_name_error %}
+        <h1 class="error">{{faculty_name_error}}</h1>
+        {% endif %}
+        {% if faculty_mail_error %}
+        <h1 class="error">{{faculty_mail_error}}</h1>
+        {% endif %}
+        {% if message_success %}
+        <h1 class="success">{{message_success}}</h1>
+        {% endif %}
+
+        <table>
+            <tr>
+                <th>Faculty ID</th>
+                <th>Faculty Name</th>
+                <th>Designation</th>
+                <th>Mail</th>
+                <th>Work Mail</th>
+                <th>Action</th>
+            </tr>
+            {% for faculty in faculties %}
+            <tr>
+                <form action="/admin/view_department/{{department[0]}}/update_faculty/{{faculty[0]}}" method="post">
+                    <td><input class="formattedInput" type="text" name="faculty_id_{{faculty[0]}}"
+                            value="{{ faculty[0] }}"></td>
+                    <td><input class="formattedInput" type="text" name="faculty_name_{{faculty[0]}}"
+                            value="{{ faculty[1] }}"></td>
+                    <td><input class="formattedInput" type="text" name="faculty_designation_{{faculty[0]}}"
+                            value="{{ faculty[2] }}" readonly></td>
+                    <td><input class="formattedInput" type="text" name="faculty_mail_{{faculty[0]}}"
+                            value="{{ faculty[3] }}"></td>
+                    <td><input class="formattedInput" type="text" name="faculty_official_mail_{{faculty[0]}}"
+                            value="{{ faculty[4] }}" readonly></td>
+                    <td>
+                        <button type="submit" class="btn-submit">Update</button>
+                </form>
+                <form action="/admin/view_department/{{department[0]}}/delete_faculty/{{faculty[0]}}" method="post"
+                    style="display:inline;">
+                    <button type="submit" class="btn-danger">Delete</button>
+                </form>
+                <form action="/admin/view_department/{{department[0]}}" method="post" style="display:inline;">
+                    <button type="submit" class="btn-submit">View</button>
+                </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <h3>Appoint Head Of Department</h3>
+        <table>
+            <form action="/admin/view_department/{{department[0]}}/appoint_HOD" method="post">
+                <tr>
+                    <th>Faculty ID :</th>
+                    <td>
+                        <select name="hod_id" id="hod_id" class="select" onchange="syncFacultyName()">
+                            {% for faculty in faculties %}
+                            <option value="{{faculty[0]}}">{{faculty[0]}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Faculty Name :</th>
+                    <td>
+                        <select name="hod_name" id="hod_name" class="select" onchange="syncFacultyId()">
+                            {% for faculty in faculties %}
+                            <option value="{{faculty[1]}}">{{faculty[1]}}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="submit" class="appoint">Appoint</button>
+                    </td>
+                </tr>
+            </form>
+        </table>
+    </main>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+<script>
+    function syncFacultyName() {
+        var facultyId = document.getElementById('hod_id').value;
+        var facultyName = document.getElementById('hod_name');
+        {% for faculty in faculties %}
+        if ('{{faculty[0]}}' == facultyId) {
+            document.getElementById('hod_name').value = '{{faculty[1]}}';
+        }
+        {% endfor %}
+    }
+
+    function syncFacultyId() {
+        var facultyName = document.getElementById('hod_name').value;
+        var facultyID = document.getElementById('hod_id');
+        {% for faculty in faculties %}
+        if ('{{faculty[1]}}' == facultyName) {
+            document.getElementById('hod_id').value = '{{faculty[0]}}';
+        }
+        {% endfor %}
+    }
+    setTimeout(function () {
+        var successMessage = document.querySelector('.success');
+        var errorMessages = document.querySelectorAll('.error');
+        var queryMessages = document.querySelectorAll('.query');
+
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+
+        errorMessages.forEach(function (error) {
+            error.style.display = 'none';
+        });
+
+        queryMessages.forEach(function (query) {
+            query.style.display = 'none';
+        });
+    }, 3000);
+</script>
+
+</html>

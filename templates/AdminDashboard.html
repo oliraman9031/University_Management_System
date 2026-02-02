@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1].upper()) }} | Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin" class="active">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/courses">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/faculty">faculty</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/admin/logs" >Logs</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main class="main_Admin">
+        {%if message_success%}
+        <h1 class="success">{{message_success}}</h1>
+        {%endif%}
+        {% if message_danger%}
+        <h1 class="error">{{message_danger}}</h1>
+        {%endif%}
+        <section class="welcome">
+            <h1>Welcome, Admin {{ (session.user[1]).upper() }}</h1>
+            <p>Your admin ID is: {{ session.user[0] }} | Email: {{ session.user[2] }}</p>
+        </section>
+
+        <section class="dashboard-grid">
+            <div class="grid-item">
+                <h2>Students</h2>
+                <ul>
+                    <li><a href="/admin/students">View Students</a></li>
+                    <li><a href="/admin/students">view Pending Applications</a></li>
+                    <li><a href="/admin/students">View Graduated</a></li>
+                    <li><a href="/admin/students">View Restricted Students</a></li>
+                </ul>
+            </div>
+
+            <div class="grid-item">
+                <h2>Courses</h2>
+                <ul>
+                    <li><a href="/admin/courses">Update Courses</a></li>
+                    <li><a href="/admin/courses">Delete Courses</a></li>
+                    <li><a href="/admin/courses">Add Course</a></li>
+                </ul>
+            </div>
+
+            <div class="grid-item">
+                <h2>Exams</h2>
+                <ul>
+                    <li><a href="/admin/exams">View Exam</a></li>
+                    <li><a href="/admin/exams">Delete Exam</a></li>
+                </ul>
+            </div>
+
+            <div class="grid-item">
+                <h2>Fees</h2>
+                <ul>
+                    <li><a href="/admin/fees">View Fees</a></li>
+                    <li><a href="/admin/fees">Add Fee</a></li>
+                    <li><a href="/admin/fees">Edit Fee</a></li>
+                </ul>
+            </div>
+
+            <div class="grid-item">
+                <h2>Departments</h2>
+                <ul>
+                    <li><a href="/admin/departments">View Departments</a></li>
+                    <li><a href="/admin/departments">Add Department</a></li>
+                    <li><a href="/admin/departments">Update Department</a></li>
+                    <li><a href="/admin/departments">Delete Department</a></li>
+                </ul>
+            </div>
+
+            <div class="grid-item">
+                <h2>Faculty</h2>
+                <ul>
+                    <li><a href="/admin/faculty">View Pending Applications</a></li>
+                    <li><a href="/admin/faculty">View Faculty</a></li>
+                    <li><a href="/admin/faculty">Update Faculty</a></li>
+                    <li><a href="/admin/faculty">Delete Faculty</a></li>
+                </ul>
+            </div>
+
+            <div class="grid-item">
+                <h2>Results</h2>
+                <ul>
+                    <li><a href="/admin/results">View Results</a></li>
+                    <li><a href="/admin/results">Delete Result</a></li>
+                    <li><a href="/admin/results">Unlock Result</a></li>
+                </ul>
+            </div>
+
+            <div class="grid-item">
+                <h2>Users</h2>
+                <ul>
+                    <li><a href="/admin/{{session.user[0]}}">Add New Admin</a></li>
+                    <li><a href="/admin/{{session.user[0]}}">View All Admins</a></li>
+                    <li><a href="/admin/{{session.user[0]}}">Edit User Information</a></li>
+                </ul>
+            </div>
+
+            <div class="grid-item">
+                <h2>System</h2>
+                <ul>
+                    <li><a href="/admin/create_tables">Create Tables</a></li>
+                    <li><a href="/admin/insert_initial_data">Insert Dummy Data</a></li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+
+</html>

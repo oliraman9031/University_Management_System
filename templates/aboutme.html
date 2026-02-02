@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
+    <title>About Me | Raman Oli</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .center-content {
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        nav{
+            width: 100%;
+            background-color: #333;
+            padding: 10px 0;
+        }
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style-type: none;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 10px;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            position: unset;
+        }
+
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/" >Home</a></li>
+            <li><a href="/aboutme" class="active">About</a></li>
+            <li><a href="/documentations">Documentations</a></li>
+            <li><a href="/signin">Sign In</a></li>
+            <li><a href="/signup">Sign Up</a></li>
+        </ul>
+    </nav>
+    <section class="center-content" >
+        <h1>Hi 👋, I'm Raman Oli</h1>
+        <h3>A Computer Science and Engineering student from Nepal
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Flag_of_Nepal.svg/2560px-Flag_of_Nepal.svg.png"
+                alt="Nepal Flag" width="50" height="50">
+        </h3>
+    </section>
+
+
+    <section class="center-content">
+        <h3>💻 Languages and Tools:</h3>
+        <p>
+            <a href="https://www.w3schools.com/css/" target="_blank" rel="noreferrer"></a>
+                <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original-wordmark.svg"
+                    alt="CSS3" width="50" height="50">
+            </a>
+            <a href="https://firebase.google.com/" target="_blank" rel="noreferrer"></a>
+                <img src="https://www.vectorlogo.zone/logos/firebase/firebase-icon.svg" alt="Firebase" width="50"
+                    height="50">
+            </a>
+            <a href="https://git-scm.com/" target="_blank" rel="noreferrer"></a>
+                <img src="https://www.vectorlogo.zone/logos/git-scm/git-scm-icon.svg" alt="Git" width="50" height="50">
+            </a>
+            <a href="https://www.w3.org/html/" target="_blank" rel="noreferrer">
+                <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original-wordmark.svg"
+                    alt="HTML5" width="50" height="50">
+            </a>
+            <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer">
+                <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg"
+                    alt="JavaScript" width="50" height="50">
+            </a>
+            <a href="https://www.linux.org/" target="_blank" rel="noreferrer">
+                <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/linux/linux-original.svg"
+                    alt="Linux" width="50" height="50">
+            </a>
+            <a href="https://www.mongodb.com/" target="_blank" rel="noreferrer">
+                <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/mongodb/mongodb-original-wordmark.svg"
+                    alt="MongoDB" width="50" height="50">
+            </a>
+            <a href="https://www.mysql.com/" target="_blank" rel="noreferrer">
+                <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/mysql/mysql-original-wordmark.svg"
+                    alt="MySQL" width="50" height="50">
+            </a>
+            <a href="https://www.python.org" target="_blank" rel="noreferrer">
+                <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg"
+                    alt="Python" width="50" height="50">
+            </a>
+            <a href="https://www.selenium.dev" target="_blank" rel="noreferrer">
+                <img src="https://raw.githubusercontent.com/detain/svg-logos/780f25886640cef088af994181646db2f6b1a3f8/svg/selenium-logo.svg"
+                    alt="Selenium" width="50" height="50">
+            </a>
+        </p>
+    </section>
+
+    <section class="center-content profile-stats">
+        <p>
+            <img src="https://komarev.com/ghpvc/?username=miyasajid19&label=Profile%20views&color=0e75b6&style=flat"
+                alt="Profile Views">
+            <img src="https://img.shields.io/github/followers/miyasajid19?style=social" alt="Followers Badge">
+            <img src="https://img.shields.io/github/stars/miyasajid19?style=social" alt="Stars Badge">
+        </p>
+    </section>
+
+    <footer>
+        <p>&copy; All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

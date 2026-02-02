@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Faculty Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 12px 0;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        nav ul li a:hover {
+            background-color: #555;
+            transform: translateY(-2px);
+        }
+
+        nav ul li a.active {
+            background-color: #555;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        main {
+            padding: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .welcome {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px #555;
+        }
+
+        .details form {
+            width: 100%;
+            max-width: 900px;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px #555;
+            transition: transform 0.3s ease;
+        }
+
+        .details form:hover {
+            transform: translateY(-5px);
+        }
+
+        .details h2 {
+            text-align: center;
+            margin: 0 0 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 1.8rem;
+        }
+
+        .details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .details th,
+        .details td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .details th {
+            font-weight: 600;
+            color: #555;
+            width: 30%;
+        }
+
+        .details input[type="text"],
+        .details input[type="date"],
+        .details input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: border 0.3s ease, box-shadow 0.3s ease;
+            font-size: 15px;
+        }
+
+        .details input[type="text"]:focus,
+        .details input[type="date"]:focus,
+        .details input[type="password"]:focus {
+            border-color: #333;
+            box-shadow: 0 0 8px #555;
+            outline: none;
+        }
+
+        .details input[type="text"]:disabled,
+        .details input[type="date"]:disabled,
+        .details input[type="password"]:disabled {
+            background-color: #f9f9f9;
+            color: #777;
+            border-color: #eee;
+        }
+
+        .details input[type="submit"] {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 500;
+            display: block;
+            margin: 20px auto 0;
+            width: 200px;
+        }
+
+        .details input[type="submit"]:hover {
+            background-color: #555;
+            box-shadow: 0 5px 15px rgba(26, 35, 126, 0.3);
+            transform: translateY(-2px);
+        }
+
+        section {
+            margin: 30px 0;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        section h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+
+        section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        section ul li {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        section ul li:hover {
+            transform: translateX(5px);
+        }
+
+        .upcoming_exams,
+        .recent_exams,
+        .locked_exams {
+            border-left-width: 5px;
+            border-left-style: solid;
+        }
+
+        .upcoming_exams {
+            border-left-color: #3949ab;
+            background-color: #f5f7ff;
+        }
+
+        .recent_exams {
+            border-left-color: #ff9800;
+            background-color: #fff9f0;
+        }
+
+        .locked_exams {
+            border-left-color: #e53935;
+            background-color: #fff5f5;
+        }
+
+        .error,
+        .success {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 5px solid #f44336;
+        }
+
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 5px solid #4caf50;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #333;
+            color: #fff;
+            margin-top: 40px;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .query {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/faculty/dashboard" class="active">Dashboard</a></li>
+            <li><a href="/faculty/exams">Exams</a></li>
+            <li><a href="/faculty/students">Students</a></li>
+            <li><a href="/faculty/results">Results</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if queries %}
+        {% for query in queries %}
+
+        <h1 class="query">{{ queries[query] }}</h1>
+        {% endfor %}
+        {% endif %}
+
+        {% if message %}
+        <div class="success">
+            {{ message }}
+        </div>
+        {% endif %}
+        {% if error %}
+        <div class="error">
+            {{ message }}
+        </div>
+        {% endif %}
+        <section class="welcome">
+            <h1>Welcome, {{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }}</h1>
+            </div>
+        </section>
+        <section class="details">
+            <form action="/faculty/update/{{phones}}" method="post">
+                <h2>Faculty Details</h2>
+                <table>
+                    <tr>
+                        <th><label for="faculty_id">ID:</label></th>
+                        <td><input type="text" name="faculty_id" id="faculty_id" value="{{ faculty[0] }}" readonly></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_name">Name:</label></th>
+                        <td><input type="text" name="faculty_name" id="faculty_name" value="{{ faculty[1] }}"></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_doj">Date Of Joining:</label></th>
+                        <td><input type="date" name="faculty_doj" id="faculty_doj" value="{{ faculty[2] }}"></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_designation">Designation:</label></th>
+                        <td><input type="text" name="faculty_designation" id="faculty_designation"
+                                value="{{ faculty[3] }}" disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_personal_mail">Phone No. :</label></th>
+                        <td>
+                            {% for phone in phones %}
+                            <input type="text" name="faculty_phone_{{phone[0]}}" id="faculty_phone"
+                                value="{{ phone[0] }}">
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_personal_mail">Personal Mail:</label></th>
+                        <td><input type="text" name="faculty_personal_mail" id="faculty_personal_mail"
+                                value="{{ faculty[4] }}"></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_work_mail">Work Mail:</label></th>
+                        <td><input type="text" name="faculty_work_mail" id="faculty_work_mail" value="{{ faculty[5] }}"
+                                readonly></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_password">Password:</label></th>
+                        <td>
+                            <input type="password" name="faculty_password" id="faculty_password"
+                                value="{{ faculty[6] }}">
+                            <input type="checkbox" id="show_password" onclick="togglePassword()"> Show Password
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_course">Course:</label></th>
+                        <td><input type="text" name="faculty_course" id="faculty_course" value="{{ faculty[7] }}"
+                                disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_department">Department:</label></th>
+                        <td><input type="text" name="faculty_department" id="faculty_department"
+                                value="{{ faculty[8] }}" disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_department_code">Department Code:</label></th>
+                        <td><input type="text" name="faculty_department_code" id="faculty_department_code"
+                                value="{{ faculty[9] }}" disabled></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <input type="submit" value="Update">
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </section>
+
+        {%if upcoming_exams%}
+        <section>
+            <h2>Upcoming Exams</h2>
+            <ul>
+                {% for exam in upcoming_exams %}
+                <li class="upcoming_exams"><b>Course:</b> {{ exam[0] }} | <b>Type:</b> {{ exam[1] }} | <b>Date:</b> {{
+                    exam[2] }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {%else%}
+        <section>
+            <h1 class="upcoming_exams">No upcoming exams.</p>
+        </section>
+        {%endif%}
+
+        {%if recent_exams%}
+        <section>
+            <h2>Recent Exams</h2>
+            <ul>
+                {% for exam in recent_exams %}
+                <li class="recent_exams"><b>Course:</b> {{ exam[0] }} | <b>Type:</b> {{ exam[1] }} | <b>Date:</b> {{
+                    exam[2] }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {%else%}
+        <section>
+            <h1 class="recent_exams">No recent exams.</p>
+        </section>
+        {%endif%}
+
+        {%if locked_exams%}
+        <section>
+            <h2>Published Result </h2>
+            <ul>
+                {% for exam in locked_exams %}
+                <li class="locked_exams"><b>Course:</b> {{ exam[0] }} | <b>Type:</b> {{ exam[1] }} | <b>Date:</b> {{
+                    exam[2] }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {%else%}
+        <section>
+            <h1 class="locked_exams">No published results.</p>
+        </section>
+        {%endif%}
+
+    </main>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+    <script>
+        function togglePassword() {
+            var passwordField = document.getElementById("faculty_password");
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+            } else {
+                passwordField.type = "password";
+            }
+        }
+        setTimeout(function () {
+            var successMessage = document.querySelector('.success');
+            var errorMessages = document.querySelectorAll('.error');
+            var queryMessages = document.querySelectorAll('.query');
+
+            if (successMessage) {
+                successMessage.style.display = 'none';
+            }
+
+            errorMessages.forEach(function (error) {
+                error.style.display = 'none';
+            });
+
+            queryMessages.forEach(function (query) {
+                query.style.display = 'none';
+            });
+        }, 3000);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Result Evaluation</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/courses">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees" class="active">Fees</a></li>
+            <li><a href="/admin/faculty">faculty</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/admin/logs" >Logs</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if query %}
+        <h1 class="query">{{query}}</h1>
+        {% endif %}
+        {%if message%}
+        <h1 class="success">
+            {{ message }}
+        </h1>
+        {%endif%}
+        <table>
+            <form action="/admin/fees/filter" method="post">
+                <thead>
+                    <tr>
+                        <th>Fee_ID</th>
+                        <th>Student_ID</th>
+                        <th>Exam_Id</th>
+                        <th>Course_ID</th>
+                        <th>Amount</th>
+                        <th>Issued_Date</th>
+                        <th>Type</th>
+                        <th>Payment_Date</th>
+                        <th>Status</th>
+                        <th>Payment_ID</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="fee_id_check" id="fee_id_check" value="True">
+                            <input type="text" name="fee_id" placeholder="Fee ID">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="student_id_check" id="student_id_check" value="True">
+                            <input type="text" name="student_id" placeholder="Student ID">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="exam_id_check" id="exam_id_check" value="True">
+                            <input type="text" name="exam_id" placeholder="Exam ID">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="course_id_check" id="course_id_check" value="True">
+                            <input type="text" name="course_id" placeholder="Course ID">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="amount_check" id="amount_check" value="True">
+                            <input type="text" name="amount" placeholder="Amount">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="issued_date_check" id="issued_date_check" value="True">
+                            <input type="date" name="issued_date">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="type_check" id="type_check" value="True">
+                            <select name="type" id="type">
+                                <option value="" selected disabled>Select</option>
+                                <option value="Registration Fees">Registration Fees</option>
+                                <option value="Course Registration">Course Registration Fees</option>
+                                <option value="Exam Fee">Exam Fee</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="payment_date_check" id="payment_date_check" value="True">
+                            <input type="date" name="payment_date">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="status_check" id="status_check" value="True">
+                            <select name="status">
+                                <option value="Pending">Pending</option>
+                                <option value="Paid">Paid</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="payment_id_check" id="payment_id_check" value="True">
+                            <input type="text" name="payment_id" placeholder="Payment ID">
+                        </td>
+                        <td rowspan="2">
+                            <button class="filter">Filter</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="sort_by_fee_id_check" id="sort_by_fee_id_check" value="False">
+                            <select name="sort_by_fee_id" id="sort_by_fee_id">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_student_id_check" id="sort_by_student_id_check"
+                                value="False">
+                            <select name="sort_by_student_id" id="sort_by_student_id">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_exam_id_check" id="sort_by_exam_id_check"
+                                value="False">
+                            <select name="sort_by_exam_id" id="sort_by_exam_id">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_course_id_check" id="sort_by_course_id_check"
+                                value="False">
+                            <select name="sort_by_course_id" id="sort_by_course_id">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_amount_check" id="sort_by_amount_check" value="False">
+                            <select name="sort_by_amount" id="sort_by_amount">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_issued_date_check" id="sort_by_issued_date_check"
+                                value="False">
+                            <select name="sort_by_issued_date" id="sort_by_issued_date">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_type_check" id="sort_by_type_check" value="False">
+                            <select name="sort_by_type" id="sort_by_type">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_payment_date_check" id="sort_by_payment_date_check"
+                                value="False">
+                            <select name="sort_by_payment_date" id="sort_by_payment_date">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_status_check" id="sort_by_status_check" value="False">
+                            <select name="sort_by_status" id="sort_by_status">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_payment_id_check" id="sort_by_payment_id_check"
+                                value="False">
+                            <select name="sort_by_payment_id" id="sort_by_payment_id">
+                                <option value="" selected disabled>Sort</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                    </tr>
+            </form>
+            {%if fees%}
+
+            {% for fee in fees %}
+            <form action="/admin/fees/update/{{fee[0]}}" method="post">
+                <tr>
+                    <td>
+                        <input type="text" name="fee_id_{{fee[0]}}" placeholder="Fee ID" value="{{ fee[0] }}" readonly>
+                    </td>
+                    <td>
+                        <input type="text" name="student_id_{{fee[0]}}" placeholder="Student ID" value="{{ fee[1] }}"
+                            readonly>
+                    </td>
+                    <td>
+                        <input type="text" name="exam_id_{{fee[0]}}" placeholder="Exam ID" value="{{ fee[2] }}"
+                            readonly>
+                    </td>
+                    <td>
+                        <input type="text" name="course_id_{{fee[0]}}" placeholder="Course ID" value="{{ fee[3] }}"
+                            readonly>
+                    </td>
+                    <td>
+                        <input type="text" name="amount_{{fee[0]}}" placeholder="Amount" value="{{ fee[4] }}">
+                    </td>
+                    <td>
+                        <input type="date" name="issued_date_{{fee[0]}}" value="{{ fee[5] }}">
+                    </td>
+                    <td>
+                        <select name="type_{{fee[0]}}" id="type">
+                            <option value="" {% if fee[6]=="" %}selected disabled{% endif %}>Select</option>
+                            <option value="Registration Fees" {% if fee[6]=="Registration Fees" %}selected{% endif %}>
+                                Registration Fees</option>
+                            <option value="Course Registration" {% if fee[6]=="Course Registration" %}selected{% endif
+                                %}>Course Registration Fees</option>
+                            <option value="Exam Fee" {% if fee[6]=="Exam Fee" %}selected{% endif %}>Exam Fee</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="date" name="payment_date_{{fee[0]}}" value="{{ fee[7] }}">
+                    </td>
+                    <td>
+                        <select name="status_{{fee[0]}}">
+                            <option value="" {% if fee[8]=="" %}selected{% endif %} disabled>Select</option>
+                            <option value="Pending" {% if fee[8]=="Pending" %}selected{% endif %}>Pending</option>
+                            <option value="Paid" {% if fee[8]=="Paid" %}selected{% endif %}>Paid</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" name="payment_id_{{fee[0]}}" placeholder="Payment ID" value="{{ fee[9] }}">
+                    </td>
+                    <td>
+                        <button type="submit" class="manage_Department_btn_update">Update</button>
+                        <a href="/admin/fees/delete/{{fee[0]}}" class="delete">Delete</a>
+                    </td>
+                </tr>
+            </form>
+            {% endfor %}
+            {%else%}
+            <tr>
+                <td colspan="11">No fees found</td>
+            </tr>
+            {%endif%}
+            </tbody>
+        </table>
+    </main>
+    <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const inputs = document.querySelectorAll('input[type="text"], input[type="date"], select');
+
+            inputs.forEach(input => {
+                input.addEventListener('input', function () {
+                    const checkbox = this.closest('td').querySelector('input[type="checkbox"]');
+                    checkbox.checked = this.value ? true : false;
+                });
+            });
+        });
+    </script>
+</body>
+<script>    setTimeout(function () {
+        var successMessage = document.querySelector('.success');
+        var errorMessages = document.querySelectorAll('.error');
+        var queryMessages = document.querySelectorAll('.query');
+
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+
+        errorMessages.forEach(function (error) {
+            error.style.display = 'none';
+        });
+
+        queryMessages.forEach(function (query) {
+            query.style.display = 'none';
+        });
+    }, 3000);</script>
+
+</html>

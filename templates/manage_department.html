@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1].upper()) }} | Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/departments">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/faculty">Faculty</a></li>
+            <li><a href="/admin/departments" class="active">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/admin/logs" >Logs</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+
+
+    <main>
+
+
+        {% if query %}
+        <h1 class="query">{{query}}</h1>
+        {% endif %}
+
+        {% if queries %}
+        {% for query in queries %}
+        <h1 class="query">{{queries[query]}}</h1>
+        {% endfor %}
+        {% endif %}
+
+        {% if message_success%}
+        <h1 class="success">{{message_success}}</h1>
+        {% endif %}
+
+        {% if message_danger%}
+        <h1 class="error">{{message_danger}}</h1>
+        {% endif %}
+
+        {% if department_id_error%}
+        <h1 class="error">{{department_id_error}}</h1>
+        {% endif %}
+
+        {% if department_name_error%}
+        <h1 class="error">{{department_name_error}}</h1>
+        {% endif %}
+        {% if active_departments %}
+        <h2>Active Departments</h2>
+        <table>
+            <tr>
+                <th>Department Code</th>
+                <th>Department Name</th>
+                <th>HOD ID</th>
+                <th>HOD Name</th>
+                <th>No. of Faculty</th>
+                <th>Action</th>
+            </tr>
+            {% for department in active_departments %}
+            <tr>
+                <form action="/admin/departments/update/{{ department[0] }}" method="post">
+                    <td><input class="formattedInput" type="text" name="department_id" value="{{ department[0] }}"></td>
+                    <td><input class="formattedInput" type="text" name="department_name" value="{{ department[1] }}">
+                    </td>
+                    <td><input class="formattedInput" type="text" name="semester" value="{{ department[2] }}"></td>
+                    <td><input class="formattedInput" type="text" name="credits" value="{{ department[3] }}"></td>
+                    <td><input class="formattedInput" type="text" name="credits" value="{{ department[4] }}"></td>
+                    <td>
+                        <a href="/admin/view_department/{{department[0]}}" class="manage_Department_btn_view">View</a>
+                        <button type="submit" class="manage_Department_btn_update">Update</button>
+                        <a href="/admin/departments/delete/{{ department[0] }}"
+                            class="manage_Department_btn_delete">Delete</a>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </table>
+
+        {% endif %}
+
+        {% if inactive_departments %}
+        <h2>Passive Departments</h2>
+        <table>
+            <tr>
+                <th>Department Code</th>
+                <th>Department Name</th>
+                <th>Action</th>
+            </tr>
+            {% for department in inactive_departments %}
+            <tr>
+                <form action="/admin/departments/update/{{ department[0] }}" method="post">
+                    <td><input class="formattedInput" type="text" name="department_id" value="{{ department[0] }}"></td>
+                    <td><input class="formattedInput" type="text" name="department_name" value="{{ department[1] }}">
+                    </td>
+                    <td>
+                        <button type="submit" class="manage_Department_btn_update">Update</button>
+                        <a href="/admin/departments/delete/{{ department[0] }}"
+                            class="manage_Department_btn_delete">Delete</a>
+                    </td>
+                </form>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+        <h2>Add New Department</h2>
+        <form action="/admin/departments/add_department" method="post">
+            <table class="add-department-table">
+                <tr>
+                    <th><label for="department_id">Department Code:</label></th>
+                    <td><input type="text" id="department_id" name="department_id"
+                            value="{% if department_id_form%}{{department_id_form}}{% endif %}">
+                    </td>
+                </tr>
+                {% if department_id_error_form%}
+                <tr>
+                    <td colspan="2" class="error"> {{department_id_error_form}}</td>
+                </tr>
+                {% endif %}
+
+                <tr>
+                    <th><label for="department_name">Department Name:</label></th>
+                    <td><input type="text" id="department_name" name="department_name"
+                            value="{% if department_name_form%}{{department_name_form}}{% endif %}">
+                    </td>
+                </tr>
+
+                {% if department_name_error_form%}
+                <tr>
+                    <td colspan="2" class="error">{{department_name_error_form}}</td>
+                </tr>
+                {% endif %}
+
+                {% if message_danger_form%}
+                <tr>
+                    <td colspan="2" class="error">{{message_danger_form}}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td colspan="2" style="text-align: center;">
+                        <button type="submit">Add</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </main>
+    <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+
+</html>

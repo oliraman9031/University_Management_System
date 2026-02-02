@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Faculty Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
+    <style>
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        nav ul li a:hover,
+        nav ul li a.active {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #333;
+            color: #fff;
+            width: 99%;
+            bottom: 0;
+        }
+
+        .details form {
+            width: 50%;
+            margin: 0 auto;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .details th,
+        .details td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .details th {
+            background-color: #f2f2f2;
+        }
+
+        .details input[type="text"],
+        .details input[type="date"],
+        .details input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .details input[type="text"]:disabled,
+        .details input[type="date"]:disabled,
+        .details input[type="password"]:disabled {
+            background-color: #e9e9e9;
+        }
+
+        .btn_success,
+        .btn_danger {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .btn_success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn_success:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        .btn_danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn_danger:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .query {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #da2638;
+            padding: 5px;
+            margin: 20px 0;
+            border-left: 5px solid #f80019;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #28a745;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin/dashboard">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/courses">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/faculty" class="active">Faculty</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if query %}
+        <h1 class="query">{{query}}</h1>
+        {% endif %}
+        {% if queries %}
+        {% for q in queries %}
+        <h1 class="query">{{queries[q]}}</h1>
+        {% endfor %}
+        {% endif %}
+        {% if message_success%}
+        <h1 class="success">{{message_success}}</h1>
+        {% endif %}
+        {% if message_danger%}
+        <h1 class="error">{{message_danger}}</h1>
+        {% endif %}
+        <br>
+        <section class="details">
+            <h2>Faculty Details</h2>
+            <form>
+                <table>
+                    <tr>
+                        <th><label for="faculty_id">ID:</label></th>
+                        <td><input type="text" name="faculty_id" id="faculty_id" value="{{ faculty[0] }}" disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_name">Name:</label></th>
+                        <td><input type="text" name="faculty_name" id="faculty_name" value="{{ faculty[1] }}" disabled>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_doj">Date Of Joining:</label></th>
+                        <td><input type="date" name="faculty_doj" id="faculty_doj" value="{{ faculty[2] }}" disabled>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_designation">Designation:</label></th>
+                        <td><input type="text" name="faculty_designation" id="faculty_designation"
+                                value="{{ faculty[3] }}" disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_phone">Phone No. :</label></th>
+                        <td>
+                            {% for phone in phones %}
+                            <input type="text" name="faculty_phone_{{phone[0]}}" id="faculty_phone{{phone[0]}}"
+                                value="{{ phone[0] }}" disabled>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_personal_mail">Personal Mail:</label></th>
+                        <td><input type="text" name="faculty_personal_mail" id="faculty_personal_mail"
+                                value="{{ faculty[4] }}" disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_work_mail">Work Mail:</label></th>
+                        <td><input type="text" name="faculty_work_mail" id="faculty_work_mail" value="{{ faculty[5] }}"
+                                disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_courseID">Course ID:</label></th>
+                        <td><input type="text" name="faculty_courseID" id="faculty_courseID" value="{{ faculty[6] }}"
+                                disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_course">Course Name:</label></th>
+                        <td><input type="text" name="faculty_course" id="faculty_course" value="{{ faculty[7] }}"
+                                disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_department_code">Department Code:</label></th>
+                        <td><input type="text" name="faculty_department_code" id="faculty_department_code"
+                                value="{{ faculty[8] }}" disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_department">Department:</label></th>
+                        <td><input type="text" name="faculty_department" id="faculty_department"
+                                value="{{ faculty[9] }}" disabled></td>
+                    </tr>
+                    <tr>
+                        <th><label for="faculty_status">Status:</label></th>
+                        <td><input type="text" name="faculty_status" id="faculty_status" value="{{ faculty[10] }}"
+                                disabled></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% if faculty[10] == 'Pending' %}
+                            <a class="btn_success" href="/admin/faculty/approve_faculty/{{faculty[0]}}">Approve</a>
+
+                            <a class="btn_danger" href="/admin/faculty/delete_faculty/{{faculty[0]}}">Delete</a>
+                            {%else%}
+                            <a class="btn_danger" href="/admin/faculty/delete_faculty/{{faculty[0]}}">Delete</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </section>
+    </main>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+</body>
+<script>
+    setTimeout(function () {
+        var successMessage = document.querySelector('.success');
+        var errorMessages = document.querySelectorAll('.error');
+        var queryMessages = document.querySelectorAll('.query');
+
+        if (successMessage) {
+            successMessage.style.display = 'none';
+        }
+
+        errorMessages.forEach(function (error) {
+            error.style.display = 'none';
+        });
+
+        queryMessages.forEach(function (query) {
+            query.style.display = 'none';
+        });
+    }, 3000);
+</script>
+
+</html>

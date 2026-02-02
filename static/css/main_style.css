@@ -1,0 +1,456 @@
+nav {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 15px;
+    transition: background-color 0.3s ease;
+}
+
+nav ul li a:hover,
+nav ul li a.active {
+    background-color: #555;
+    border-radius: 5px;
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    position: unset;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+body {
+    padding-top: 60px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table,
+th,
+td {
+    border: 1px solid #ddd;
+}
+
+th,
+td {
+    padding: 20px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+a {
+    text-decoration: none;
+    color: white;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.view {
+    background-color: #007BFF;
+    /* A professional blue */
+}
+
+.reject {
+    background-color: #DC3545;
+    /* A Bootstrap-like red */
+}
+
+.restrict {
+    background-color: #FFC107;
+    /* A warning yellow */
+    color: #000;
+    /* Ensure text is readable on yellow */
+}
+
+.graduate {
+    background-color: #28A745;
+    /* A success green */
+}
+
+.approve {
+    background-color: #17A2B8;
+    /* A teal color */
+}
+
+.query {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 15px;
+    margin: 20px 0;
+    border-left: 5px solid #ffc107;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: left;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #da2638;
+    padding: 5px;
+    margin: 20px 0;
+    border-left: 5px solid #f80019;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.success {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    margin: 20px 0;
+    border-left: 5px solid #28a745;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+table,
+th,
+td {
+    border: 1px solid #ddd;
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 8px;
+    margin: 4px 0;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #555;
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+a {
+    text-decoration: none;
+    color: #fff;
+}
+
+.filter,
+.update,
+.delete {
+    padding: 10px 20px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.update {
+    background-color: #4CAF50;
+}
+
+.filter {
+    background-color: #2196F3;
+}
+
+.delete {
+    background-color: #f44336;
+}
+
+button:hover,
+.filter:hover,
+.update:hover,
+.delete:hover {
+    background-color: #777;
+}
+
+.admin-main {
+    padding: 25px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin_delete {
+    color: #fff;
+    background-color: #e74c3c;
+    padding: 10px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+form input,
+select {
+    width: 100%;
+    padding: 12px;
+    margin: 5px 0;
+    box-sizing: border-box;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+    font-size: 15px;
+}
+
+form input:focus,
+select:focus {
+    border-color: #333;
+    box-shadow: 0 0 8px #555;
+    outline: none;
+}
+
+.checkbox {
+    width: 10%;
+}
+
+button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    font-weight: 500;
+    display: block;
+    margin: 20px auto 0;
+    width: 200px;
+}
+
+button:hover {
+    background-color: #555;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.main_Admin {
+    padding: 120px;
+}
+
+
+.welcome {
+    background-color: #f0f0f0;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+
+.grid-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.grid-item h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.grid-item ul {
+    list-style: none;
+    padding: 0;
+}
+
+.grid-item ul li {
+    margin-bottom: 8px;
+}
+
+.grid-item ul li a {
+    color: #007bff;
+    text-decoration: none;
+    display: block;
+    padding: 8px 12px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.grid-item ul li a:hover {
+    background-color: #e9ecef;
+}
+
+.formattedInput {
+    width: 100%;
+    border: none;
+    outline: none;
+}
+
+.btn-submit {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.btn-submit:hover {
+    background-color: #45a049;
+}
+
+.btn-danger {
+    display: inline-block;
+    background-color: #f44336;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-top: 10px;
+}
+
+.btn-danger:hover {
+    background-color: #da190b;
+}
+
+
+.add-department-table {
+    width: 50%;
+    margin: 0 auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-department-table th,
+.add-department-table td {
+    padding: 10px;
+    text-align: left;
+}
+
+.add-department-table th {
+    background-color: #f2f2f2;
+}
+
+.add-department-table input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.add-department-table button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+
+.manage_Department_btn_update {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    display: inline-block;
+    padding: 8px 10px;
+    width: auto;
+}
+
+.manage_Department_btn_update:hover {
+    background-color: #45a049;
+}
+
+.manage_Department_btn {
+    text-decoration: none;
+    color: white;
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.manage_Department_btn_view {
+    background-color: blue;
+}
+
+.manage_Department_btn_delete {
+    background-color: red;
+}

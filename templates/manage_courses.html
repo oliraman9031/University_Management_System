@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Result Evaluation</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/courses" class="active">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/faculty">faculty</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/admin/logs">Logs</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {%if query%}
+        <h1 class="query">{{query}}</h1>
+        {%endif%}
+        {%if message%}
+        <h1 class="success">{{message}}</h1>
+        {%endif%}
+        {%if courses%}
+        <table>
+            <form action="/admin/courses/filter_sorted" method="post">
+                <thead>
+                    <tr>
+                        <th>Course ID</th>
+                        <th>Course Name</th>
+                        <th>Semester</th>
+                        <th>Credits</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="course_id_check" id="course_id_check" value="False">
+                            <input type="text" name="course_id" placeholder="Course ID">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="course_name_check" id="course_name_check" value="False">
+                            <input type="text" name="course_name" placeholder="Course Name">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="semester_check" id="semester_check" value="False">
+                            <input type="text" name="semester" placeholder="Semester">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="credits_check" id="credits_check" value="False">
+                            <input type="text" name="credits" placeholder="Credits">
+                        </td>
+                        <td>
+                            <input type="checkbox" name="price_check" id="price_check" value="False">
+                            <input type="text" name="price_id" placeholder="Price">
+                        </td>
+                        <td rowspan="2">
+                            <button class="filter">Filter and Sort</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="sort_by_course_id_check" id="sort_by_course_id_check"
+                                value="false">
+                            <select name="sort_by_course_id" id="sort_by_course_id">
+                                <option value="" selected disabled>Select</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_course_name_check" id="sort_by_course_name_check"
+                                value="False">
+                            <select name="sort_by_course_id_name" id="sort_by_course_name">
+                                <option value="" selected disabled>Select</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_semester_check" id="sort_by_semester_check"
+                                value="False">
+                            <select name="sort_by_semester" id="sort_by_semester">
+                                <option value="" selected disabled>Select</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_credits_check" id="sort_by_credits_check"
+                                value="False">
+                            <select name="sort_by_credits" id="sort_by_credits">
+                                <option value="" selected disabled>Select</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="sort_by_price_check" id="sort_by_price_check" value="False">
+                            <select name="sort_by_price" id="sort_by_price">
+                                <option value="" selected disabled>Select</option>
+                                <option value="Ascending">Ascending</option>
+                                <option value="Descending">Descending</option>
+                            </select>
+                        </td>
+                    </tr>
+            </form>
+            {% for course in courses %}
+            <form action="/admin/course/update/{{ course[0] }}" method="post">
+                <tr>
+                    <td>
+                        <input type="text" name="course_id_{{course[0]}}" value="{{ course[0] }}" readonly>
+                    </td>
+                    <td>
+                        <input type="text" name="course_name_{{course[0]}}" value="{{ course[1] }}">
+                    </td>
+                    <td>
+                        <input type="text" name="semester_{{course[0]}}" value="{{ course[2] }}">
+                    </td>
+                    <td>
+                        <input type="text" name="credits_{{course[0]}}" value="{{ course[3] }}">
+                    </td>
+                    <td>
+                        <input type="text" name="price_{{course[0]}}" value="{{ course[4] }}">
+                    </td>
+                    <td>
+                        <button type="submit" class="manage_Department_btn_update">Update</button>
+                        <a href="/admin/course/delete/{{ course[0] }}" class="delete">Delete</a>
+                    </td>
+                </tr>
+            </form>
+            {% endfor %}
+            {%else%}
+            <tr>
+                <td colspan="11">No Courses found</td>
+            </tr>
+            </tbody>
+        </table>
+        {%endif%}
+        <h2>Add New Course</h2>
+        <form action="/admin/courses/add_course" method="post">
+            <table>
+                <tr>
+                    <th>
+                        <label for="course_id">Course ID:</label>
+                    </th>
+                    <td>
+                        <input type="text" id="course_id" name="course_id" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label for="course_name">Course Name:</label>
+                    </th>
+                    <td>
+                        <input type="text" id="course_name" name="course_name" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label for="semester">Semester:</label>
+                    </th>
+                    <td>
+                        <input type="text" id="semester" name="semester" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label for="credits">Credits:</label>
+                    </th>
+                    <td>
+                        <input type="number" id="credits" name="credits" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        <label for="price">Price:</label>
+                    </th>
+                    <td>
+                        <input type="number" id="price" name="price" required>
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="2">
+                        <button type="submit" style="background-color: #4CAF50;">Add Course</button>
+                    </th>
+                </tr>
+            </table>
+        </form>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fields = [
+                { checkbox: 'course_id_check', input: 'course_id' },
+                { checkbox: 'course_name_check', input: 'course_name' },
+                { checkbox: 'semester_check', input: 'semester' },
+                { checkbox: 'credits_check', input: 'credits' },
+                { checkbox: 'price_check', input: 'price_id' }
+            ];
+
+            fields.forEach(field => {
+                const checkbox = document.getElementById(field.checkbox);
+                const input = document.querySelector(`input[name="${field.input}"]`);
+
+                input.addEventListener('input', () => {
+                    checkbox.checked = input.value.trim() !== '';
+                });
+            });
+        });
+        const sortFields = [
+            { checkbox: 'sort_by_course_id_check', select: 'sort_by_course_id' },
+            { checkbox: 'sort_by_course_name_check', select: 'sort_by_course_name' },
+            { checkbox: 'sort_by_semester_check', select: 'sort_by_semester' },
+            { checkbox: 'sort_by_credits_check', select: 'sort_by_credits' },
+            { checkbox: 'sort_by_price_check', select: 'sort_by_price' }
+        ];
+
+        sortFields.forEach(field => {
+            const checkbox = document.getElementById(field.checkbox);
+            const select = document.getElementById(field.select);
+
+            select.addEventListener('change', () => {
+                checkbox.checked = select.value !== '';
+                checkbox.value = checkbox.checked ? 'True' : 'False';
+            });
+        });
+    </script>
+        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
+            <p>© 2026 University Management System</p>
+            <p>Developed and Designed by Raman Oli</p>
+        </footer>
+</body>
+
+</html>
