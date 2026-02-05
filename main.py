@@ -12,7 +12,6 @@ import pymysql
 import os
 from dotenv import load_dotenv
 load_dotenv()
-
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
 app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL', 'False').lower() in ['true', '1', 't']
@@ -22,7 +21,6 @@ app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
 mail = Mail(app)
-print("TIMEOUT =", os.getenv("TIMEOUT"))
 
 def send_email(app, to_email, subject, body):
     mail = Mail(app)
@@ -66,6 +64,10 @@ except pymysql.err.OperationalError as err:
 
 mycursor = mydb.cursor()
 
+
+
+
+
 def generateIDPass(UserType,FirstName,LastName,digits=60):
     if UserType=='student':
         mycursor.execute("SELECT MAX(Student_ID) FROM students")
@@ -97,6 +99,13 @@ def generateIDPass(UserType,FirstName,LastName,digits=60):
     return mail, password, result
 
 
+
+
+
+
+
+
+
 def getFacultyCourses():
     mycursor.execute("SELECT  Course_ID,Course_Name FROM courses")
     courses = tuple(tuple(course.values()) for course in mycursor.fetchall())
@@ -108,6 +117,10 @@ def getFacultyDepartments():
     mycursor.execute("SELECT  Department_ID,Department_Name FROM department")
     departments = tuple(tuple(department.values()) for department in mycursor.fetchall())
     return departments
+
+
+
+
 
 def querymaker(query,values):
     display_query=query
@@ -122,13 +135,12 @@ def main():
     session.clear()
     return render_template('index.html')
 
-@app.route('/signin')
-def signin_page():
-    return render_template('SignIn.html')
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    return render_template('registration.html')
+
+
+
+
+
 
 @app.route('/register/student', methods=['GET', 'POST'])
 def register_student():
@@ -145,7 +157,7 @@ def register_student():
         country_error = None
         dob_error = None
 
-        FirstName = request.form.get('firstname', '').capitalize().strip()
+        FirstName = request.form.get('firstname').capitalize().strip()
         if not FirstName:
             firstname_error = "First name cannot be empty"
         elif len(FirstName) < 3:
@@ -153,41 +165,39 @@ def register_student():
         elif not re.match("^[a-zA-Z]*$", FirstName):
             firstname_error = "First name should contain only alphabets"
         
-        MiddleName = request.form.get('middlename', '').capitalize().strip()
+        MiddleName = request.form.get('middlename').capitalize().strip()
         if MiddleName and not re.match("^[a-zA-Z]*$", MiddleName):
             middlename_error = "Middle name should contain only alphabets"
 
-        LastName = request.form.get('lastname', '').capitalize().strip()
-        if not LastName:
-            lastname_error = "Last name cannot be empty"
-        elif not re.match("^[a-zA-Z]*$", LastName):
+        LastName = request.form.get('lastname').capitalize().strip()
+        if not re.match("^[a-zA-Z]*$", LastName):
             lastname_error = "Last name should contain only alphabets"
 
-        dob = request.form.get('dob', '')
+        dob = request.form.get('dob')
         if not dob:
             dob_error = "Please select date of birth"
         elif dob > str(datetime.datetime.now().date()):
             dob_error = "Date of birth cannot be in the future"
 
-        gender = request.form.get('gender', '')
+        gender = request.form.get('gender')
         if not gender:
             gender_error = "Please select gender"
 
-        email = request.form.get('email', '').lower().strip()
+        email = request.form.get('email').lower().strip()
 
-        street = request.form.get('street', '').capitalize().strip()
+        street = request.form.get('street').capitalize().strip()
         if not street:
             street_error = "Street cannot be empty"
         
-        district = request.form.get('district', '').capitalize().strip()
+        district = request.form.get('district').capitalize().strip()
         if not district:
             district_error = "District cannot be empty"
         
-        state = request.form.get('state', '').capitalize().strip()
+        state = request.form.get('state').capitalize().strip()
         if not state:
             state_error = "State cannot be empty"
         
-        country = request.form.get('country', '').capitalize().strip()
+        country = request.form.get('country').capitalize().strip()
         if not country:
             country_error = "Country cannot be empty"
 
@@ -199,17 +209,10 @@ def register_student():
             mycursor.execute("SELECT * FROM students WHERE email=%s", (email,))
             if mycursor.fetchone():
                 email_error = "Email already exists"
-        
-        phone_input = request.form.get('phone', '').strip()
-        phones = [p.strip() for p in phone_input.split(',') if p.strip()]
-        
-        if not phones:
-            phone_error = "At least one phone number is required"
-        else:
-            for phone in phones:
-                if not re.match(r"^\+?\d{1,3}[-\s]?\d{10}$", phone) and not re.match(r"^\d{10}$", phone):
-                    phone_error = "Invalid phone number format"
-                    break
+        phones = request.form.get('phone').strip().split(',')
+        for phone in phones:
+            if not re.match(r"^\+?\d{1,3}[-\s]?\d{10}$", phone) and not re.match(r"^\d{10}$", phone):
+                phone_error = "Invalid phone number"
 
         try:
             courses={"courses":getFacultyCourses()}
@@ -229,26 +232,21 @@ def register_student():
         queries=dict()
         values = (result, FirstName, MiddleName, LastName, street, district, state, country, gender, dob, email, mail.lower(), password, datetime.datetime.now().year)
         queries['insert_student']=querymaker(query,values)
+        mycursor.execute(query, values)
+        mydb.commit()
         
-        try:
-            mycursor.execute(query, values)
-            mydb.commit()
-            
-            for phone in phones:
-                sql = "INSERT INTO student_phone_no (Student_ID, Phone) VALUES (%s, %s)"
-                queries[f'{phone}']=querymaker(sql,(result, phone))
-                mycursor.execute(sql, (result, phone))
-            mydb.commit()
-            
-            query = "INSERT INTO fees (Student_ID, Amount, Type) VALUES (%s, %s, %s)"
-            mycursor.execute(query, (result, 1500, 'Registration Fees'))
-            queries['insert_fees']=querymaker(query,(result, 1500, 'Registration Fees'))
-            mydb.commit()
-            
-            return render_template('index.html', message_success="Application has been submitted successfully. Your credentials are Email: " + mail.lower() + " Password: " + password + " You will receive an email confirmation if accepted.",queries=queries)
-        except Exception as e:
-            mydb.rollback()
-            return render_template('index.html', message_error="Registration failed: " + str(e))
+        for phone in phones:
+            sql = "INSERT INTO student_phone_no (Student_ID, Phone) VALUES (%s, %s)"
+            queries[f'{phone}']=querymaker(sql,(result, phone))
+            mycursor.execute(sql, (result, phone))
+        mydb.commit()
+        
+        query = "INSERT INTO fees (Student_ID, Amount, Type) VALUES (%s, %s, %s)"
+        mycursor.execute(query, (result, 1500, 'Registration Fees'))
+        queries['insert_fees']=querymaker(query,(result, 1500, 'Registration Fees'))
+        mydb.commit()
+        
+        return render_template('index.html', message_success="Application has been submitted successfully. You will receive an email with your login credentials if accepted.",queries=queries)
     
     return render_template('registration.html')
 
@@ -265,19 +263,16 @@ def register_faculty():
         department_id_error = None
         designation_error = None
 
-        firstname = request.form.get('firstname', '').capitalize().strip()
-        middlename = request.form.get('middlename', '').capitalize().strip()
-        lastname = request.form.get('lastname', '').capitalize().strip()
-        email = request.form.get('email', '').lower().strip()
-        phone_input = request.form.get('phone', '').strip()
-        phones = [p.strip() for p in phone_input.split(',') if p.strip()]
-        
+        firstname = request.form.get('firstname').capitalize().strip()
+        middlename = request.form.get('middlename').capitalize().strip()
+        lastname = request.form.get('lastname').capitalize().strip()
+        email = request.form.get('email').lower().strip()
+        phones = request.form.get('phone').strip().split(',')
         facultyCourseID = request.form.get('facultyCourseID')
         facultyCourseName = request.form.get('facultyCourseName')
         facultyDepartmentID = request.form.get('facultyDepartmentID')
         facultyDepartmentName = request.form.get('facultyDepartmentName')
         facultyDesignation = request.form.get('Designation')
-        
         if not firstname:
             firstname_error = "First name cannot be empty"
         elif len(firstname) < 3:
@@ -290,7 +285,6 @@ def register_faculty():
         
         if lastname and not re.match("^[a-zA-Z]*$", lastname):
             lastname_error = "Last name should contain only alphabets"
-        
         if not email:
             email_error = "Email cannot be empty"
         elif not re.match(r"[^@]+@[^@]+\.[^@]+", email):
@@ -300,13 +294,9 @@ def register_faculty():
             if mycursor.fetchone():
                 email_error = "Email already exists"
         
-        if not phones:
-            phone_error = "At least one phone number is required"
-        else:
-            for phone in phones:
-                if not re.match(r"^\+?\d{1,3}[-\s]?\d{10}$", phone) and not re.match(r"^\d{10}$", phone):
-                    phone_error = "Invalid phone number format"
-                    break
+        for phone in phones:
+            if not re.match(r"^\+?\d{1,3}[-\s]?\d{10}$", phone) and not re.match(r"^\d{10}$", phone):
+                phone_error = "Invalid phone number"
         
         if not facultyCourseID:
             course_id_error = "Please select course"
@@ -314,39 +304,54 @@ def register_faculty():
             department_id_error = "Please select department"
         if not facultyDesignation:
             designation_error = "Please select designation"
-        
         try:
             courses={"courses":getFacultyCourses()}
             departments={"departments":getFacultyDepartments()}
         except:
             courses={"courses":[]}
             departments={"departments":[]}
-        
         if any([email_error, phone_error, firstname_error,middlename_error,lastname_error, course_id_error, department_id_error, designation_error]):
             return render_template('registration.html',**courses,**departments, email_error=email_error, phone_error=phone_error, firstname_error=firstname_error,lastname_error=lastname_error,middlename_error=middlename_error, course_id_error=course_id_error, department_id_error=department_id_error, designation_error=designation_error,firstname=firstname,middlename=middlename,lastname=lastname,email=email,phone=(',').join(phones),userType='faculty',facultyCourseID=facultyCourseID,facultyDepartmentID=facultyDepartmentID,facultyDesignation=facultyDesignation,facultyCourseName=facultyCourseName,facultyDepartmentName=facultyDepartmentName)
-        
         mail, password, result = generateIDPass('faculty', firstname.lower(), "")
         query = "INSERT INTO faculty (Faculty_ID, First_Name, Middle_Name, Last_Name, Date_of_Joining, Designation, Mail, Official_Mail, Password, Course_ID, Department_ID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         values = (result, firstname, middlename, lastname, datetime.datetime.now().date(), facultyDesignation, email, mail.lower(), password, facultyCourseID, facultyDepartmentID)
-        
-        try:
-            mycursor.execute(query, values)
-            mydb.commit()
-            
-            for phone in phones:
-                sql = "INSERT INTO faculty_phone_no (Faculty_ID, Phone) VALUES (%s, %s)"
-                mycursor.execute(sql, (result, phone))
-            mydb.commit()
-            
-            query_display=querymaker(query,values)
-            print(query_display)
-            print("-"*100)
-            return render_template('index.html', message_success="Faculty registration successful. Your credentials are Email: " + mail.lower() + " Password: " + password,query=query_display)
-        except Exception as e:
-            mydb.rollback()
-            return render_template('index.html', message_error="Faculty registration failed: " + str(e))
+        mycursor.execute(query, values)
+        mydb.commit()
+        for phone in phones:
+            sql = "INSERT INTO faculty_phone_no (Faculty_ID, Phone) VALUES (%s, %s)"
+            mycursor.execute(sql, (result, phone))
+        mydb.commit()
+        query=querymaker(query,values)
+        print(query)
+        print("-"*100)
+        return render_template('index.html', message_success="Faculty registration successful.",query=query)
     
     return render_template('registration.html')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @app.route('/signup')
 def signup():
