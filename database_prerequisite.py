@@ -12,7 +12,8 @@ load_dotenv()
 
 # Using a name without spaces is generally better practice for database names
 # DATABASE_NAME = os.getenv("DATABASE_NAME", "ums")
-DATABASE_NAME = os.getenv("DATABASE_NAME", "university_management_system") # Changed name for better practice
+DATABASE_NAME = os.getenv("DATABASE_NAME", "university_management_system") 
+#  Changed name for better practice
 
 DB_HOST = os.getenv("DB_HOST", "localhost")  # Default to localhost if not set
 DB_PORT = int(os.getenv("DB_PORT", 3306))  # Default to 3306 if not set
@@ -191,6 +192,36 @@ def create_tables():
                     Status ENUM('Pending', 'Enrolled', 'Graduated', 'Restricted') NOT NULL DEFAULT 'Pending'
                 );
             """),
+            ("events", """
+                CREATE TABLE IF NOT EXISTS events (
+                    Event_ID INT PRIMARY KEY AUTO_INCREMENT,
+                    Event_Name VARCHAR(255) NOT NULL,
+                    Event_Type VARCHAR(255) NOT NULL,
+                    Event_Date DATE NOT NULL,
+                    Venue VARCHAR(255) NOT NULL,
+                    Organized_By VARCHAR(255) NOT NULL,
+                    Status ENUM('Upcoming','Ongoing','Completed','Cancelled') NOT NULL DEFAULT 'Upcoming',
+                    Description TEXT
+                );
+            """),
+            ("student_event_participation", """
+                CREATE TABLE IF NOT EXISTS student_event_participation (
+                    Student_ID INT NOT NULL,
+                    Event_ID INT NOT NULL,
+                    Participation_Date DATE DEFAULT CURRENT_DATE,
+                    Role ENUM('Participant', 'Organizer', 'Volunteer') DEFAULT 'Participant',
+                    Result VARCHAR(50),
+
+                    PRIMARY KEY (Student_ID, Event_ID),
+
+                    FOREIGN KEY (Student_ID) REFERENCES students(Student_ID)
+                    ON DELETE CASCADE ON UPDATE CASCADE,
+
+                    FOREIGN KEY (Event_ID) REFERENCES events(Event_ID)
+                    ON DELETE CASCADE ON UPDATE CASCADE
+                );
+            """),
+
             ("courses", """
                 CREATE TABLE IF NOT EXISTS courses (
                     Course_ID VARCHAR(13) PRIMARY KEY,
@@ -215,13 +246,13 @@ def create_tables():
                     Last_Name VARCHAR(255) NOT NULL,
                     Date_of_Joining DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     Designation VARCHAR(32) NOT NULL,
-                    Mail VARCHAR(255) NOT NULL, # Assuming this is a personal mail
-                    Official_Mail VARCHAR(255) UNIQUE NOT NULL, # This should be unique like student email
+                    Mail VARCHAR(255) NOT NULL,  -- Assuming this is a personal mail
+                    Official_Mail VARCHAR(255) UNIQUE NOT NULL, -- This should be unique like student email
                     Password VARCHAR(255) NOT NULL,
-                    Course_ID VARCHAR(13), # Changed to SET NULL
+                    Course_ID VARCHAR(13), -- Changed to SET NULL
                     Department_ID VARCHAR(7) NOT NULL,
                     Status ENUM('Pending', 'Active') DEFAULT 'Pending',
-                    FOREIGN KEY (Course_ID) REFERENCES courses(Course_ID) ON DELETE SET NULL ON UPDATE CASCADE, # Changed to SET NULL
+                    FOREIGN KEY (Course_ID) REFERENCES courses(Course_ID) ON DELETE SET NULL ON UPDATE CASCADE, -- Changed to SET NULL
                     FOREIGN KEY (Department_ID) REFERENCES department(Department_ID) ON DELETE CASCADE ON UPDATE CASCADE
                 );
             """),
@@ -260,7 +291,7 @@ def create_tables():
                     Exam_Type ENUM ('Mid Semester Test', 'End Semester Test', 'Quiz-1', 'Quiz-2', 'Lab Evaluation I', 'Lab Evaluation II', 'Others') NOT NULL,
                     Venue VARCHAR(61) NOT NULL,
                     Status ENUM('Unevaluated','Evaluated','Locked') NOT NULL,
-                    CONSTRAINT UNIQUE(Course_ID, Exam_Type), # Ensure unique exam type per course
+                    CONSTRAINT UNIQUE(Course_ID, Exam_Type), -- Ensure unique exam type per course
                     FOREIGN KEY (Course_ID) REFERENCES courses(Course_ID) ON DELETE CASCADE ON UPDATE CASCADE
                 );
             """),
@@ -321,8 +352,12 @@ def create_tables():
 
         # Execute table creation
         for table_name, sql in tables_sql:
-            print(f"Creating table '{table_name}' if it doesn't exist...")
+            print(f"Creating table '{table_name}'...")
+        try:
             cursor.execute(sql)
+            print(f"✅ {table_name} created")
+        except pymysql.Error as e:
+            print(f"❌ Error creating {table_name}: {e}")
             print(f"Table '{table_name}' created or already exists.")
 
         # Add the foreign key constraint for department.Head_of_Department
@@ -612,6 +647,20 @@ def insert_initial_data():
         ('ME', 'Mechanical Engineering', NULL),
         ('CE', 'Civil Engineering', NULL),
         ('EE', 'Electrical Engineering', NULL);
+        """)
+
+        cursor.execute("""
+        INSERT INTO events (Event_Name, Event_Type, Event_Date, Venue, Organized_By, Status) VALUES
+        ('Hackathon 2026', 'Technical', '2026-04-10', 'Auditorium', 'CSE Dept', 'Upcoming'),
+        ('Cultural Fest', 'Cultural', '2026-05-01', 'Main Ground', 'Student Council', 'Upcoming'),
+        ('Football Tournament', 'Sports', '2026-04-20', 'Sports Complex', 'Sports Dept', 'Upcoming');
+        """)
+
+        cursor.execute("""
+        INSERT INTO student_event_participation (Student_ID, Event_ID, Role, Result) VALUES
+        (1, 1, 'Participant', 'Winner'),
+        (2, 1, 'Participant', NULL),
+        (1, 2, 'Organizer', NULL);
         """)
 
         # Now insert courses data

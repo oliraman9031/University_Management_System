@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ (session.user[1].upper()) }} | Events Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin">Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/courses">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/events" class="active">Events</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/faculty">Faculty</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/admin/logs">Logs</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+
+    <main>
+
+        {% if query %}
+        <h1 class="query">{{ query }}</h1>
+        {% endif %}
+
+        {% if message_success %}
+        <h1 class="success">{{ message_success }}</h1>
+        {% endif %}
+
+        {% if message_danger %}
+        <h1 class="error">{{ message_danger }}</h1>
+        {% endif %}
+
+        {% if errors %}
+        {% for error in errors %}
+        <h1 class="error">{{ errors[error] }}</h1>
+        {% endfor %}
+        {% endif %}
+
+        <!-- ================= UPCOMING EVENTS ================= -->
+        {% if upcoming_events %}
+        <h1>Upcoming Events</h1>
+        <table>
+            <tr>
+                <th>Event ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+
+            {% for event in upcoming_events %}
+            <form action="/admin/events/update/{{event[0]}}" method="POST">
+                <tr>
+                    <td>
+                        <input type="text" name="event_id_{{event[0]}}" value="{{event[0]}}" readonly>
+                    </td>
+
+                    <td>
+                        <input type="text" name="event_name_{{event[0]}}" value="{{event[1]}}">
+                    </td>
+
+                    <td>
+                        <input type="text" name="event_type_{{event[0]}}" value="{{event[2]}}">
+                    </td>
+
+                    <td>
+                        <input type="date" name="event_date_{{event[0]}}" value="{{event[3]}}">
+                    </td>
+
+                    <td>
+                        <input type="text" name="venue_{{event[0]}}" value="{{event[4]}}">
+                    </td>
+
+                    <td>
+                        <select name="status_{{event[0]}}">
+                            <option value="Upcoming" {% if event[5]=="Upcoming" %}selected{% endif %}>Upcoming</option>
+                            <option value="Ongoing" {% if event[5]=="Ongoing" %}selected{% endif %}>Ongoing</option>
+                            <option value="Completed" {% if event[5]=="Completed" %}selected{% endif %}>Completed</option>
+                        </select>
+                    </td>
+
+                    <td>
+                        <button type="submit" class="btn-submit">Update</button>
+                        <a href="/admin/events/delete/{{event[0]}}" class="btn-danger">Delete</a>
+                    </td>
+                </tr>
+            </form>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+
+        <!-- ================= PAST EVENTS ================= -->
+        {% if past_events %}
+        <h1>Past Events</h1>
+        <table>
+            <tr>
+                <th>Event ID</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+
+            {% for event in past_events %}
+            <tr>
+                <td>{{ event[0] }}</td>
+                <td>{{ event[1] }}</td>
+                <td>{{ event[2] }}</td>
+                <td>{{ event[3] }}</td>
+                <td>{{ event[4] }}</td>
+                <td>{{ event[5] }}</td>
+                <td>
+                    <a href="/admin/events/delete/{{event[0]}}" class="btn-danger">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+
+        <!-- ================= ADD EVENT ================= -->
+        <h1>Add New Event</h1>
+        <form action="/admin/events/add" method="POST">
+            <table>
+                <tr>
+                    <th>Name</th>
+                    <td><input type="text" name="event_name" required></td>
+                </tr>
+
+                <tr>
+                    <th>Type</th>
+                    <td><input type="text" name="event_type" required></td>
+                </tr>
+
+                <tr>
+                    <th>Date</th>
+                    <td><input type="date" name="event_date" required></td>
+                </tr>
+
+                <tr>
+                    <th>Venue</th>
+                    <td><input type="text" name="venue" required></td>
+                </tr>
+
+                <tr>
+                    <th>Status</th>
+                    <td>
+                        <select name="status">
+                            <option value="Upcoming">Upcoming</option>
+                            <option value="Ongoing">Ongoing</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <button type="submit">Add Event</button>
+                    </td>
+                </tr>
+            </table>
+        </form>
+
+        {% if not upcoming_events and not past_events %}
+        <h1>No Events Found</h1>
+        {% endif %}
+
+    </main>
+
+    <footer style="text-align:center; padding:10px;">
+        <p>© 2026 University Management System</p>
+        <p>Developed and Designed by Raman Oli</p>
+    </footer>
+
+</body>
+</html>

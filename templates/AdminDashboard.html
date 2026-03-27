@@ -7,6 +7,16 @@
     <title>{{ (session.user[1].upper()) }} | Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
     <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+    <style>nav ul {
+                display: flex;
+                flex-wrap: wrap;   /* KEY LINE */
+                justify-content: center;
+            }
+
+            nav ul li {
+                margin: 5px 10px;
+            }
+    </style>
 </head>
 
 <body>
@@ -21,6 +31,7 @@
             <li><a href="/admin/departments">Departments</a></li>
             <li><a href="/admin/faculty">faculty</a></li>
             <li><a href="/admin/results">Results</a></li>
+            <li><a href="/admin/events">Events</a></li>
             <li><a href="/admin/logs" >Logs</a></li>
             <li><a href="/logout">Logout</a></li>
         </ul>
@@ -71,6 +82,15 @@
                     <li><a href="/admin/fees">View Fees</a></li>
                     <li><a href="/admin/fees">Add Fee</a></li>
                     <li><a href="/admin/fees">Edit Fee</a></li>
+                </ul>
+            </div>
+
+            <div class="grid-item">
+                <h2>Events</h2>
+                <ul>
+                    <li><a href="/admin/events">View Events</a></li>
+                    <li><a href="/admin/events">Add Event</a></li>
+                    <li><a href="/admin/events">Edit Events</a></li>
                 </ul>
             </div>
 

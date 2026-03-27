@@ -64,10 +64,6 @@ except pymysql.err.OperationalError as err:
 
 mycursor = mydb.cursor()
 
-
-
-
-
 def generateIDPass(UserType,FirstName,LastName,digits=60):
     if UserType=='student':
         mycursor.execute("SELECT MAX(Student_ID) FROM students")
@@ -98,29 +94,15 @@ def generateIDPass(UserType,FirstName,LastName,digits=60):
     password = FirstName[:3] + LastName[-3:] + str(result)[-2:] + '@tiet'
     return mail, password, result
 
-
-
-
-
-
-
-
-
 def getFacultyCourses():
     mycursor.execute("SELECT  Course_ID,Course_Name FROM courses")
     courses = tuple(tuple(course.values()) for course in mycursor.fetchall())
     return courses
 
-
-
 def getFacultyDepartments():
     mycursor.execute("SELECT  Department_ID,Department_Name FROM department")
     departments = tuple(tuple(department.values()) for department in mycursor.fetchall())
     return departments
-
-
-
-
 
 def querymaker(query,values):
     display_query=query
@@ -129,17 +111,70 @@ def querymaker(query,values):
             display_query = display_query.replace('%s', f"'{value}'", 1)
     return display_query
         
-
 @app.route('/')
 def main():
     session.clear()
     return render_template('index.html')
 
+@app.route("/admin/events", methods=['GET', 'POST'])
+def manage_events():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    if session['user'][0] != 1:
+        return redirect(url_for('main'))
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        etype = request.form.get('type')
+        edate = request.form.get('date')
+        venue = request.form.get('venue')
+        organized_by = request.form.get('organized_by')
+        status = request.form.get('status')
+        description = request.form.get('description')
+
+        if not name or not etype or not edate or not venue or not organized_by:
+            message_danger = 'Please fill required fields.'
+        else:
+            query = "INSERT INTO events (Event_Name, Event_Type, Event_Date, Venue, Organized_By, Status, Description) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+            mycursor.execute(query, (name, etype, edate, venue, organized_by, status or 'Upcoming', description))
+            mydb.commit()
+            return redirect(url_for('manage_events', message_success='Event created successfully.'))
+
+    mycursor.execute("SELECT * FROM events ORDER BY Event_Date ASC")
+    events = mycursor.fetchall()
+    return render_template('manage_events.html', events=events, message_success=request.args.get('message_success'), message_danger=request.args.get('message_danger'))
+
+@app.route('/admin/events/delete/<int:event_id>')
+def delete_event(event_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    if session['user'][0] != 1:
+        return redirect(url_for('main'))
+
+    mycursor.execute("DELETE FROM events WHERE Event_ID=%s", (event_id,))
+    mydb.commit()
+    return redirect(url_for('manage_events', message_success='Event deleted successfully.'))
 
 
+# Public events page
+@app.route('/events')
+def events():
+    mycursor.execute("SELECT * FROM events WHERE Status != 'Completed' ORDER BY Event_Date ASC")
+    events = mycursor.fetchall()
+    return render_template('events.html', events=events)
 
+@app.route("/events/register/<int:event_id>")
+def register_event(event_id):
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    student_id = session['user'][0]
 
+    mycursor.execute("SELECT * FROM student_event_participation WHERE Student_ID=%s AND Event_ID=%s", (student_id, event_id))
+    if not mycursor.fetchone():
+        mycursor.execute("INSERT INTO student_event_participation (Student_ID, Event_ID) VALUES (%s, %s)", (student_id, event_id))
+        mydb.commit()
 
+    return redirect("/events")
 
 
 @app.route('/register/student', methods=['GET', 'POST'])
@@ -226,7 +261,7 @@ def register_student():
         
         mail, password, result = generateIDPass('student', FirstName.lower(), LastName.lower())
         query = """
-            INSERT INTO students (Student_ID, First_Name, Middle_Name, Last_Name, Street, District, State, Country, Gender, Date_of_Birth, Email, College_Email, Password, Enrollment_Year)
+            INSERT INTO students (Student_ID, First_name, Middle_name, Last_name, Street, District, State, Country, Gender, Date_of_birth, Email, College_email, Password, Enrollment_year)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         queries=dict()
@@ -249,7 +284,6 @@ def register_student():
         return render_template('index.html', message_success="Application has been submitted successfully. You will receive an email with your login credentials if accepted.",queries=queries)
     
     return render_template('registration.html')
-
 
 @app.route('/register/faculty', methods=['GET', 'POST'])
 def register_faculty():
@@ -313,7 +347,7 @@ def register_faculty():
         if any([email_error, phone_error, firstname_error,middlename_error,lastname_error, course_id_error, department_id_error, designation_error]):
             return render_template('registration.html',**courses,**departments, email_error=email_error, phone_error=phone_error, firstname_error=firstname_error,lastname_error=lastname_error,middlename_error=middlename_error, course_id_error=course_id_error, department_id_error=department_id_error, designation_error=designation_error,firstname=firstname,middlename=middlename,lastname=lastname,email=email,phone=(',').join(phones),userType='faculty',facultyCourseID=facultyCourseID,facultyDepartmentID=facultyDepartmentID,facultyDesignation=facultyDesignation,facultyCourseName=facultyCourseName,facultyDepartmentName=facultyDepartmentName)
         mail, password, result = generateIDPass('faculty', firstname.lower(), "")
-        query = "INSERT INTO faculty (Faculty_ID, First_Name, Middle_Name, Last_Name, Date_of_Joining, Designation, Mail, Official_Mail, Password, Course_ID, Department_ID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+        query = "INSERT INTO faculty (Faculty_ID, First_name, Middle_name, Last_name, Date_of_Joining, Designation, Mail, Official_Mail, Password, Course_ID, Department_ID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         values = (result, firstname, middlename, lastname, datetime.datetime.now().date(), facultyDesignation, email, mail.lower(), password, facultyCourseID, facultyDepartmentID)
         mycursor.execute(query, values)
         mydb.commit()
@@ -328,31 +362,6 @@ def register_faculty():
     
     return render_template('registration.html')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 @app.route('/signup')
 def signup():
     try:
@@ -365,10 +374,6 @@ def signup():
     courses
     return render_template('registration.html',**courses,**departments)
 
-
-
-
-
 @app.route('/faculty/dashboard')
 def facultyDashboard():
     if 'user' not in session:
@@ -378,7 +383,7 @@ def facultyDashboard():
     queries={}
     message = request.args.get('message', None)
     error = request.args.get('error', None)
-    query = "SELECT faculty.Faculty_ID, CONCAT(faculty.First_Name,' ',faculty.Middle_Name,' ',faculty.Last_Name) AS Name, faculty.Date_of_Joining, faculty.Designation, faculty.Mail, faculty.Official_Mail, faculty.Password, courses.Course_Name ,department.Department_Name, department.Department_ID FROM faculty INNER JOIN courses on courses.Course_ID = faculty.Course_ID INNER JOIN department on department.Department_ID =faculty.Department_ID WHERE faculty.Faculty_ID=%s;" 
+    query = "SELECT faculty.Faculty_ID, CONCAT(faculty.First_name,' ',faculty.Middle_name,' ',faculty.Last_name) AS Name, faculty.Date_of_Joining, faculty.Designation, faculty.Mail, faculty.Official_Mail, faculty.Password, courses.Course_name ,department.Department_name, department.Department_ID FROM faculty INNER JOIN courses on courses.Course_ID = faculty.Course_ID INNER JOIN department on department.Department_ID =faculty.Department_ID WHERE faculty.Faculty_ID=%s;" 
     mycursor.execute(query, (session['user'][0],))
     faculty = (tuple(tuple(exam.values()) for exam in mycursor.fetchall()))[0]
     print(faculty)
@@ -387,17 +392,17 @@ def facultyDashboard():
     mycursor.execute(query, (session['user'][0],))
     phones = tuple(tuple(exam.values()) for exam in mycursor.fetchall())
     queries['phones']=querymaker(query,(session['user'][0],))
-    query = "SELECT courses.Course_Name,exams.Exam_Type,exams.Exam_Date FROM exams INNER JOIN courses on courses.Course_ID=exams.Course_ID WHERE exams.Course_ID=%s AND exams.Exam_Date>=CURRENT_DATE ORDER BY exams.Exam_Date ASC;"
+    query = "SELECT courses.Course_name,exams.Exam_type,exams.Exam_date FROM exams INNER JOIN courses on courses.Course_ID=exams.Course_ID WHERE exams.Course_ID=%s AND exams.Exam_date>=CURRENT_DATE ORDER BY exams.Exam_date ASC;"
     mycursor.execute(query, (session['user'][9],))
     upcoming_exams = tuple(tuple(exam.values()) for exam in mycursor.fetchall())
     queries['upcoming_exams']=querymaker(query,(session['user'][9],))
 
-    query = "SELECT courses.Course_Name,exams.Exam_Type,exams.Exam_Date FROM exams INNER JOIN courses on courses.Course_ID=exams.Course_ID WHERE exams.Course_ID=%s AND exams.Exam_Date<CURRENT_DATE AND exams.Status='Unevaluated' ORDER BY exams.Exam_Date ASC;"
+    query = "SELECT courses.Course_name,exams.Exam_type,exams.Exam_date FROM exams INNER JOIN courses on courses.Course_ID=exams.Course_ID WHERE exams.Course_ID=%s AND exams.Exam_date<CURRENT_DATE AND exams.Status='Unevaluated' ORDER BY exams.Exam_date ASC;"
     mycursor.execute(query, (session['user'][9],))
     recent_exams = tuple(tuple(exam.values()) for exam in mycursor.fetchall())
     queries['recent_exams']=querymaker(query,(session['user'][9],))
 
-    query = "SELECT courses.Course_Name,exams.Exam_Type,exams.Exam_Date FROM exams INNER JOIN courses on courses.Course_ID=exams.Course_ID WHERE exams.Course_ID=%s AND exams.Status='Locked' ORDER BY exams.Exam_Date DESC LIMIT 3;"
+    query = "SELECT courses.Course_name,exams.Exam_type,exams.Exam_date FROM exams INNER JOIN courses on courses.Course_ID=exams.Course_ID WHERE exams.Course_ID=%s AND exams.Status='Locked' ORDER BY exams.Exam_date DESC LIMIT 3;"
     mycursor.execute(query, (session['user'][9],))
     locked_exams = tuple(tuple(exam.values()) for exam in mycursor.fetchall())
     queries['locked_exams']=querymaker(query,(session['user'][9],))
@@ -465,16 +470,12 @@ def update_faculty(phones):
         personal_mail=request.form.get('faculty_personal_mail')
         password=request.form.get('faculty_password')
         session['user'] = (session['user'][0], FirstName, MiddleName, LastName, session['user'][4], session['user'][5], session['user'][6], session['user'][7], session['user'][8], session['user'][9])
-        query="UPDATE faculty SET First_Name=%s, Middle_Name=%s, Last_Name=%s, Mail=%s, Password=%s WHERE Faculty_ID=%s"
+        query="UPDATE faculty SET First_name=%s, Middle_name=%s, Last_name=%s, Mail=%s, Password=%s WHERE Faculty_ID=%s"
         values=(FirstName,MiddleName,LastName,personal_mail,password,session['user'][0])
         mycursor.execute(query,values)
         mydb.commit()
         queries['faculty']=querymaker(query,(FirstName,MiddleName,LastName,personal_mail,password,session['user'][0]))
-
-
         remaining_phones = valid_phones.copy()
-
-
         # for current_phone, new_phone in valid_phones:
         for i in range(len(phones)):
             current_phone = valid_phones[i][0]
@@ -516,23 +517,19 @@ def update_faculty(phones):
         return redirect(url_for('facultyDashboard', message="Updated", queries=queries))
     return redirect(url_for('facultyDashboard', error="Failed to update"))  # Redirect to dashboard with error message
 
-
-
-
 @app.route('/faculty')
 def faculty():
     if 'user' not in session:
         return redirect(url_for('login'))
     return redirect(url_for('facultyDashboard'))
 
-
 @app.route('/faculty/students')
 def facultyStudents():
     if 'user' not in session:
         return redirect(url_for('login'))
     query = f"""
-        SELECT CONCAT(s.first_name, ' ', s.Middle_Name, ' ', s.Last_Name) AS Full_Name,s.Gender , c.Course_Name,e.Enrolled_IN , 
-       s.College_Email,s.student_id
+        SELECT CONCAT(s.first_name, ' ', s.Middle_name, ' ', s.Last_name) AS Full_name,s.Gender , c.Course_name,e.Enrolled_IN , 
+       s.College_email,s.student_id
        FROM students s
        JOIN enrollment e ON s.Student_ID = e.Student_ID
        JOIN faculty f ON f.Course_ID = e.Course_ID
@@ -553,6 +550,7 @@ def faculty_unenroll_student(student_id):
     mycursor.execute(query, (student_id, session['user'][9]))
     mydb.commit()
     return redirect(url_for('facultyStudents',message_danger="Student Unenrolled From The Course",query=querymaker(query,(student_id,session['user'][9]))))
+
 @app.route('/faculty/exams/add', methods=['GET', 'POST'])
 def add_exam():
     if 'user' not in session:
@@ -623,6 +621,7 @@ def add_exam():
         
         return redirect(url_for('facultyExams',message="Exam scheduled"))
     return render_template('exams.html', courses=getFacultyCourses())
+
 @app.route('/faculty/exams/update/<int:exam_id>', methods=['POST'])
 def update_exam(exam_id):
     if 'user' not in session:
@@ -663,6 +662,7 @@ def update_exam(exam_id):
         mycursor.execute(query, values)
         mydb.commit()
         return redirect(url_for('facultyExams', message_success="Exam Updated", query=querymaker(query, values)))
+
 @app.route('/faculty/exams/delete/<int:exam_id>')
 def delete_exam(exam_id):
     if 'user' not in session:
@@ -695,7 +695,7 @@ def facultyExams():
     queries['upcoming_exams'] = querymaker(query, (session['user'][9],))
     
     
-    query = "SELECT * FROM exams WHERE Exam_Date<CURRENT_DATE AND Course_ID=%s;"
+    query = "SELECT * FROM exams WHERE Exam_date<CURRENT_DATE AND Course_ID=%s;"
     mycursor.execute(query, (session['user'][9],))
     recent_exams = tuple(tuple(exam.values()) for exam in mycursor.fetchall())
     queries['recent_exams'] = querymaker(query, (session['user'][9],))
@@ -714,7 +714,6 @@ def facultyExams():
     if errors_update:
         queries = None
     
-    
     query = request.args.get('query', None)
     if query:
         queries = None
@@ -727,11 +726,11 @@ def evaluate(exam_id):
     message=request.args.get('message_success',None)
     error=request.args.get('message_danger',None)
     queries={}
-    query = "SELECT Student_ID, CONCAT(First_Name, ' ', Middle_Name, ' ', Last_Name) AS Full_Name FROM students WHERE Student_ID IN ( SELECT takes_exams.Student_ID FROM takes_exams INNER JOIN exams ON exams.Exam_ID = takes_exams.Exam_ID WHERE exams.Exam_ID = %s ) AND Student_ID NOT IN ( SELECT results.Student_ID FROM results INNER JOIN exams ON results.Exam_ID = exams.Exam_ID WHERE exams.Exam_ID = %s );"
+    query = "SELECT Student_ID, CONCAT(First_name, ' ', Middle_name, ' ', Last_name) AS Full_name FROM students WHERE Student_ID IN ( SELECT takes_exams.Student_ID FROM takes_exams INNER JOIN exams ON exams.Exam_ID = takes_exams.Exam_ID WHERE exams.Exam_ID = %s ) AND Student_ID NOT IN ( SELECT results.Student_ID FROM results INNER JOIN exams ON results.Exam_ID = exams.Exam_ID WHERE exams.Exam_ID = %s );"
     mycursor.execute(query, (exam_id,exam_id))
     students_to_be_evaluted = tuple(tuple(student.values()) for student in mycursor.fetchall())
     queries['students_to_be_evaluted']=querymaker(query,(exam_id,exam_id))
-    query = """ SELECT students.Student_ID, CONCAT(students.First_Name, ' ', students.Middle_Name, ' ', students.Last_Name) AS Full_Name, results.Marks_Obtained, results.Grade FROM students INNER JOIN results ON results.Student_ID = students.Student_ID WHERE students.Student_ID IN ( SELECT takes_exams.Student_ID FROM takes_exams INNER JOIN exams ON exams.Exam_ID = takes_exams.Exam_ID WHERE exams.Exam_ID = %s ) AND results.Exam_ID = %s; """
+    query = """ SELECT students.Student_ID, CONCAT(students.First_name, ' ', students.Middle_name, ' ', students.Last_name) AS Full_name, results.Marks_Obtained, results.Grade FROM students INNER JOIN results ON results.Student_ID = students.Student_ID WHERE students.Student_ID IN ( SELECT takes_exams.Student_ID FROM takes_exams INNER JOIN exams ON exams.Exam_ID = takes_exams.Exam_ID WHERE exams.Exam_ID = %s ) AND results.Exam_ID = %s; """
     mycursor.execute(query, (exam_id,exam_id))
     students_evaluted = tuple(tuple(student.values()) for student in mycursor.fetchall())
     queries['students_evaluted']=querymaker(query,(exam_id,exam_id))
@@ -739,8 +738,6 @@ def evaluate(exam_id):
     if query:
         queries=None
     return render_template('result_evaluation.html', students_to_be_evaluted=students_to_be_evaluted, students_evaluted=students_evaluted,exam_id=exam_id,message_success=message,message_danger=error,queries=queries,query=query)
-
-
 
 @app.route('/faculty/results/<int:exam_id>/evaluate/<int:student_id>', methods=['POST'])
 def evaluate_student(exam_id, student_id):
@@ -844,7 +841,6 @@ def lock(exam_id):
     
     return redirect(url_for('facultyResults',message_success="Result Locked",query=querymaker(query,(exam_id,))))
 
-
 @app.route('/faculty/results/<int:exam_id>/delete/<int:student_id>', methods=['POST'])
 def delete_student_result(exam_id, student_id):
     
@@ -877,17 +873,15 @@ def view_results(exam_id):
     if 'user' not in session:
         return redirect(url_for('login'))
     queries={}
-    query = "SELECT results.Result_ID,results.Student_ID,CONCAT(students.First_Name,' ',students.Middle_Name,' ',students.Last_Name) AS Name,results.Marks_Obtained,results.Grade from results INNER JOIN students ON results.Student_ID=students.Student_ID INNER JOIN courses on results.Course_ID=courses.Course_ID WHERE results.Exam_ID=%s;"
+    query = "SELECT results.Result_ID,results.Student_ID,CONCAT(students.First_name,' ',students.Middle_name,' ',students.Last_name) AS Name,results.Marks_Obtained,results.Grade from results INNER JOIN students ON results.Student_ID=students.Student_ID INNER JOIN courses on results.Course_ID=courses.Course_ID WHERE results.Exam_ID=%s;"
     mycursor.execute(query, (exam_id,))
     results = tuple(tuple(result.values()) for result in mycursor.fetchall())
     queries['results']=querymaker(query,(exam_id,))
-    query="SELECT DISTINCT courses.Course_Name, courses.Credits FROM courses INNER JOIN results ON results.Course_ID=courses.Course_ID WHERE results.Exam_ID=%s;"
+    query="SELECT DISTINCT courses.Course_name, courses.Credits FROM courses INNER JOIN results ON results.Course_ID=courses.Course_ID WHERE results.Exam_ID=%s;"
     mycursor.execute(query,(exam_id,))  
     course=(tuple(tuple(course.values()) for course in mycursor.fetchall()))[0]
     queries['course']=querymaker(query,(exam_id,))
     return render_template('view_result.html', results=results, exam_id=exam_id,course=course,queries=queries)
-
-
 
 @app.route('/faculty/results')
 def facultyResults():
@@ -902,11 +896,11 @@ def facultyResults():
         mycursor.execute(query, params)
         return tuple(tuple(exam.values()) for exam in mycursor.fetchall())
     
-    exams_about_To_held_query = "SELECT * FROM exams WHERE Course_ID=%s  AND Exam_Date>CURRENT_DATE"
+    exams_about_To_held_query = "SELECT * FROM exams WHERE Course_ID=%s  AND Exam_date>CURRENT_DATE"
     exams_about_To_held = fetch_exams(exams_about_To_held_query, (session['user'][9],))
     queries['Exams_about_To_held'] = querymaker(exams_about_To_held_query, (session['user'][9],))
     
-    exams_to_evaluate_query = "SELECT * FROM exams WHERE Course_ID=%s AND Status='Unevaluated' AND Exam_Date<=CURRENT_DATE"
+    exams_to_evaluate_query = "SELECT * FROM exams WHERE Course_ID=%s AND Status='Unevaluated' AND Exam_date<=CURRENT_DATE"
     Exams_toEvaluate = fetch_exams(exams_to_evaluate_query, (session['user'][9],))
     queries['Exams_to_Evaluate'] = querymaker(exams_to_evaluate_query, (session['user'][9],))
     
@@ -937,7 +931,7 @@ def student():
         errors = {}
     queries = {}
     message=request.args.get('message',None)
-    query="SELECT `Student_ID`, CONCAT(`First_Name`, ' ', COALESCE(`Middle_Name`, ''), ' ', `Last_Name`) AS `Full_Name`, CONCAT( COALESCE(`Street`, ''), ', ', COALESCE(`District`, ''), ', ', COALESCE(`State`, ''), ', ', COALESCE(`Country`, '') ) AS `Full_Address`, `Gender`, `Date_of_Birth`, `Email`, `College_Email`, `Password`, `Enrollment_Year`, `Graduation_Year`, `Status` FROM `students` WHERE Student_ID=%s;"
+    query="SELECT `Student_ID`, CONCAT(`First_name`, ' ', COALESCE(`Middle_name`, ''), ' ', `Last_name`) AS `Full_name`, CONCAT( COALESCE(`Street`, ''), ', ', COALESCE(`District`, ''), ', ', COALESCE(`State`, ''), ', ', COALESCE(`Country`, '') ) AS `Full_address`, `Gender`, `Date_of_birth`, `Email`, `College_email`, `Password`, `Enrollment_year`, `Graduation_year`, `Status` FROM `students` WHERE Student_ID=%s;"
     mycursor.execute(query,(session['user'][0],))
     student=tuple(tuple(student.values())for student in mycursor.fetchall())[0]
     queries['student']=querymaker(query,(session['user'][0],))
@@ -945,20 +939,20 @@ def student():
     mycursor.execute(query,(session['user'][0],))
     phones=tuple(tuple(phone.values()) for phone in mycursor.fetchall())
     queries['phones']=querymaker(query,(session['user'][0],))
-    upcoming_exams_query = "SELECT courses.Course_Name,exams.Course_ID,exams.Exam_Type,exams.Exam_Duration,exams.Exam_Date,exams.Venue FROM exams INNER JOIN courses ON courses.Course_ID=exams.Course_ID WHERE exams.Exam_ID IN ( SELECT takes_exams.Exam_ID FROM takes_exams WHERE takes_exams.Student_ID = %s ) AND exams.Exam_Date >= CURRENT_DATE ORDER BY exams.Exam_Date ASC;"
+    upcoming_exams_query = "SELECT courses.Course_name,exams.Course_ID,exams.Exam_type,exams.Exam_duration,exams.Exam_date,exams.Venue FROM exams INNER JOIN courses ON courses.Course_ID=exams.Course_ID WHERE exams.Exam_ID IN ( SELECT takes_exams.Exam_ID FROM takes_exams WHERE takes_exams.Student_ID = %s ) AND exams.Exam_date >= CURRENT_DATE ORDER BY exams.Exam_date ASC;"
     mycursor.execute(upcoming_exams_query,(session['user'][0],))
     upcoming_exams=tuple(tuple(exam.values()) for exam in mycursor.fetchall())
     queries['upcoming_exams']=querymaker(upcoming_exams_query,(session['user'][0],))
-    recent_exams_query = "SELECT courses.Course_Name,exams.Course_ID,exams.Exam_Type,exams.Exam_Duration,exams.Exam_Date,exams.Venue FROM exams INNER JOIN courses ON courses.Course_ID=exams.Course_ID WHERE exams.Exam_ID IN ( SELECT takes_exams.Exam_ID FROM takes_exams WHERE takes_exams.Student_ID = %s ) AND exams.Exam_Date < CURRENT_DATE ORDER BY exams.Exam_Date ASC;"
+    recent_exams_query = "SELECT courses.Course_name,exams.Course_ID,exams.Exam_type,exams.Exam_duration,exams.Exam_date,exams.Venue FROM exams INNER JOIN courses ON courses.Course_ID=exams.Course_ID WHERE exams.Exam_ID IN ( SELECT takes_exams.Exam_ID FROM takes_exams WHERE takes_exams.Student_ID = %s ) AND exams.Exam_date < CURRENT_DATE ORDER BY exams.Exam_date ASC;"
     mycursor.execute(recent_exams_query,(session['user'][0],))
     recent_exams=tuple(tuple(exam.values()) for exam in mycursor.fetchall())
     queries['recent_exams']=querymaker(recent_exams_query,(session['user'][0],))
-    query="SELECT  courses.Course_Name,courses.Course_ID,exams.Exam_Type,exams.Exam_Duration,exams.Exam_Date,exams.Venue FROM exams INNER JOIN courses ON exams.Course_ID = courses.Course_ID WHERE exams.Exam_ID IN ( SELECT takes_exams.Exam_ID FROM results INNER JOIN exams ON results.Exam_ID = exams.Exam_ID INNER JOIN takes_exams ON results.Exam_ID = takes_exams.Exam_ID WHERE results.Status = 'Locked' AND takes_exams.Student_ID = %s ) ORDER BY exams.Exam_Date ASC;"
+    query="SELECT  courses.Course_name,courses.Course_ID,exams.Exam_type,exams.Exam_duration,exams.Exam_date,exams.Venue FROM exams INNER JOIN courses ON exams.Course_ID = courses.Course_ID WHERE exams.Exam_ID IN ( SELECT takes_exams.Exam_ID FROM results INNER JOIN exams ON results.Exam_ID = exams.Exam_ID INNER JOIN takes_exams ON results.Exam_ID = takes_exams.Exam_ID WHERE results.Status = 'Locked' AND takes_exams.Student_ID = %s ) ORDER BY exams.Exam_date ASC;"
     mycursor.execute(query,(session['user'][0],))
     locked_results=tuple(tuple(result.values()) for result in mycursor.fetchall())
     queries['locked_results']=querymaker(query,(session['user'][0],))
     
-    query="SELECT  courses.Course_Name,courses.Course_ID,exams.Exam_Type,exams.Exam_Duration,exams.Exam_Date,exams.Venue FROM exams INNER JOIN courses ON exams.Course_ID = courses.Course_ID WHERE exams.Exam_ID IN ( SELECT takes_exams.Exam_ID FROM results INNER JOIN exams ON results.Exam_ID = exams.Exam_ID INNER JOIN takes_exams ON results.Exam_ID = takes_exams.Exam_ID WHERE results.Status = 'Evaluated' AND takes_exams.Student_ID = %s ) ORDER BY exams.Exam_Date ASC;"
+    query="SELECT  courses.Course_name,courses.Course_ID,exams.Exam_type,exams.Exam_duration,exams.Exam_date,exams.Venue FROM exams INNER JOIN courses ON exams.Course_ID = courses.Course_ID WHERE exams.Exam_ID IN ( SELECT takes_exams.Exam_ID FROM results INNER JOIN exams ON results.Exam_ID = exams.Exam_ID INNER JOIN takes_exams ON results.Exam_ID = takes_exams.Exam_ID WHERE results.Status = 'Evaluated' AND takes_exams.Student_ID = %s ) ORDER BY exams.Exam_date ASC;"
     mycursor.execute(query,(session['user'][0],))
     evaluated_results=tuple(tuple(result.values()) for result in mycursor.fetchall())
     queries['evaluated_results']=querymaker(query,(session['user'][0],))
@@ -1103,7 +1097,7 @@ def update_student(student_id):
         # Validation passed, proceed with update
         query = """
             UPDATE students 
-            SET First_Name=%s, Middle_Name=%s, Last_Name=%s, Street=%s, District=%s, State=%s, Country=%s, Gender=%s, Date_of_Birth=%s, Email=%s, College_Email=%s, Password=%s 
+            SET First_name=%s, Middle_name=%s, Last_name=%s, Street=%s, District=%s, State=%s, Country=%s, Gender=%s, Date_of_birth=%s, Email=%s, College_email=%s, Password=%s 
             WHERE Student_ID=%s
         """
         values = (
@@ -1154,8 +1148,10 @@ def update_student(student_id):
         query = "SELECT Phone FROM student_phone_no WHERE Student_ID=%s"
         mycursor.execute(query, (student_id,))
         x=list(tuple(x.values())[0]for x in mycursor.fetchall())
+
         current_phones = [phone[0] for phone in x]
         queries['current_phones']=querymaker(query,(student_id,))
+
         # Add any new phone numbers that weren't updates
         for _, new_phone in remaining_phones:
             if new_phone:
@@ -1189,7 +1185,7 @@ def studentFees():
         mycursor.execute(query, params)
         return tuple(tuple(fee.values()) for fee in mycursor.fetchall())
     course_registration_fees_pending_query = """
-        SELECT fees.Fee_ID, fees.Course_ID, courses.Course_Name, fees.Amount, fees.Issued_Date, fees.Type
+        SELECT fees.Fee_ID, fees.Course_ID, courses.Course_name, fees.Amount, fees.Issued_date, fees.Type
         FROM fees
         INNER JOIN courses ON courses.Course_ID = fees.Course_ID
         WHERE fees.student_id = %s AND fees.Status = 'Pending'
@@ -1197,7 +1193,7 @@ def studentFees():
     course_registration_fees_pending = fetch_fees(course_registration_fees_pending_query, (student_id,))
     queries['course_registration_fees_pending']=querymaker(course_registration_fees_pending_query,(student_id,))
     course_registration_fees_paid_query = """
-        SELECT fees.Fee_ID, fees.Course_ID, courses.Course_Name, fees.Amount, fees.Issued_Date, fees.Payment_Date, fees.Type, fees.Payment_ID
+        SELECT fees.Fee_ID, fees.Course_ID, courses.Course_name, fees.Amount, fees.Issued_date, fees.Payment_date, fees.Type, fees.Payment_ID
         FROM fees
         INNER JOIN courses ON courses.Course_ID = fees.Course_ID
         WHERE fees.student_id = %s AND fees.Status != 'Pending'
@@ -1205,41 +1201,41 @@ def studentFees():
     course_registration_fees_paid = fetch_fees(course_registration_fees_paid_query, (student_id,))
     queries['course_registration_fees_paid']=querymaker(course_registration_fees_paid_query,(student_id,))
     exam_fees_query_pending = """
-        SELECT fees.Fee_ID, fees.Student_ID, fees.Exam_Id, fees.Amount, fees.Issued_Date, fees.Status, exams_with_courses.Exam_Type, exams_with_courses.Course_Name, exams_with_courses.Course_ID
+        SELECT fees.Fee_ID, fees.Student_ID, fees.Exam_id, fees.Amount, fees.Issued_date, fees.Status, exams_with_courses.Exam_type, exams_with_courses.Course_name, exams_with_courses.Course_ID
         FROM fees
         INNER JOIN (
-            SELECT exams.Exam_ID, courses.Course_Name, exams.Exam_Type, courses.Course_ID
+            SELECT exams.Exam_id, courses.Course_name, exams.Exam_type, courses.Course_ID
             FROM exams
             INNER JOIN courses ON exams.Course_ID = courses.Course_ID
-        ) AS exams_with_courses ON fees.Exam_ID = exams_with_courses.Exam_ID
+        ) AS exams_with_courses ON fees.Exam_id = exams_with_courses.Exam_id
         WHERE fees.student_id = %s AND fees.Status = 'Pending'
     """
     exam_fees_pending = fetch_fees(exam_fees_query_pending, (student_id,))
     queries['exam_fees_pending']=querymaker(exam_fees_query_pending,(student_id,))
     exam_fees_query_paid = """
-        SELECT fees.Fee_ID, fees.Student_ID, fees.Exam_Id, fees.Amount, fees.Issued_Date, fees.Payment_Date, fees.Payment_ID, exams_with_courses.Exam_Type, exams_with_courses.Course_Name, exams_with_courses.Course_ID
+        SELECT fees.Fee_ID, fees.Student_id, fees.Exam_id, fees.Amount, fees.Issued_date, fees.Payment_date, fees.Payment_id, exams_with_courses.Exam_type, exams_with_courses.Course_name, exams_with_courses.Course_id
         FROM fees
         INNER JOIN (
-            SELECT exams.Exam_ID, courses.Course_Name, exams.Exam_Type, courses.Course_ID
+            SELECT exams.Exam_id, courses.Course_name, exams.Exam_type, courses.Course_id
             FROM exams
-            INNER JOIN courses ON exams.Course_ID = courses.Course_ID
-        ) AS exams_with_courses ON fees.Exam_ID = exams_with_courses.Exam_ID
+            INNER JOIN courses ON exams.Course_id = courses.Course_id
+        ) AS exams_with_courses ON fees.Exam_id = exams_with_courses.Exam_id
         WHERE fees.student_id = %s AND fees.Status != 'Pending'
     """
 
     exam_fees_paid = fetch_fees(exam_fees_query_paid, (student_id,))
     queries['exam_fees_paid']=querymaker(exam_fees_query_paid,(student_id,))
     registration_fees_pending_query = """
-        SELECT Fee_ID, Student_ID, Amount, Issued_Date, Type, Status
+        SELECT Fee_ID, Student_id, Amount, Issued_date, Type, Status
         FROM fees
-        WHERE Student_ID = %s AND Type = 'Registration Fees' AND Status = 'Pending'
+        WHERE Student_id = %s AND Type = 'Registration Fees' AND Status = 'Pending'
     """
     registration_fees_pending = fetch_fees(registration_fees_pending_query, (student_id,))
     queries['registration_fees_pending']=querymaker(registration_fees_pending_query,(student_id,))
     registration_fees_paid_query = """
-        SELECT Fee_ID, Student_ID, Amount, Issued_Date, Type, Payment_Date, Payment_ID
+        SELECT Fee_ID, Student_id, Amount, Issued_date, Type, Payment_date, Payment_id
         FROM fees
-        WHERE Student_ID = %s AND Type = 'Registration Fees' AND Status != 'Pending'
+        WHERE Student_id = %s AND Type = 'Registration Fees' AND Status != 'Pending'
     """
     registration_fees_paid = fetch_fees(registration_fees_paid_query, (student_id,))
     queries['registration_fees_paid']=querymaker(registration_fees_paid_query,(student_id,))
@@ -1272,1235 +1268,3 @@ def pay_fee(fee_id):
         mycursor.execute(query,(payment_ID,))
         if tuple((mycursor.fetchone()).values())[0]>0:
             return redirect(url_for('studentFees',message_error="Payment ID already exists",query=querymaker(query,(payment_ID,))))
-        query = "UPDATE fees SET Status='Paid', Payment_Date=%s, payment_ID=%s WHERE Fee_ID=%s"
-        values = (datetime.datetime.now().date(),payment_ID,fee_id)
-        mycursor.execute(query, values)
-        mydb.commit()
-        return redirect(url_for('studentFees',message_success="Payment Successful",query=querymaker(query,values)))
-
-@app.route('/student/register', methods=['GET', 'POST'])
-def course_register():
-    
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    if request.method == 'POST':
-        queries={}
-        student_id = request.form.get('studentId').strip()
-        course_codes = request.form.get('courseCode').strip().split(',')
-
-        mycursor.execute("SELECT Course_ID FROM enrollment WHERE Student_ID=%s", (student_id,))
-        registered_courses = [x[0] for x in tuple(tuple(course.values()) for course in mycursor.fetchall())]
-
-        new_course_codes = [code for code in course_codes if code not in registered_courses]
-        if not new_course_codes:
-            return "<script>alert('Already Registered for the course')</script>"
-
-        for course_code in new_course_codes:
-            mycursor.execute("SELECT Course_ID,Price FROM courses WHERE Course_ID=%s", (course_code,))
-            course_id,price = tuple((mycursor.fetchone()).values())
-
-            query = "INSERT INTO `enrollment`(`Student_ID`, `Course_ID`, `Enrolled_IN`) VALUES (%s, %s, %s)"
-            values = (student_id, course_id, datetime.datetime.now().date())
-            mycursor.execute(query, values)
-            queries[f'course_{course_code}']=querymaker(query,values)
-            query = "INSERT INTO `fees`(`Student_ID`, `Course_ID`, `Amount`, `Type`) VALUES (%s, %s, %s, %s)"
-            values = (student_id, course_id, price, 'Course Registration')
-            mycursor.execute(query, values)
-            queries[f"fee_{course_code}"]=querymaker(query,values)
-        mydb.commit()
-        return redirect(url_for('studentCourses',message_enrolled="Courses Registered Successfully",queries=queries))
-    return render_template('studentDashboard.html')
-
-
-
-@app.route('/student/courses/<int:student_id>/unenroll/<string:course_id>')
-def unenroll(student_id,course_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
-    student_id = session['user'][0]
-    query = "DELETE FROM enrollment WHERE Student_ID=%s AND Course_ID=%s"
-    mycursor.execute(query, (student_id, course_id))
-    mydb.commit()
-    message_deleted="Course Unenrolled Successfully"
-    query=querymaker(query,(student_id,course_id))
-    return redirect(url_for('studentCourses',message_deleted=message_deleted,query=query))
-
-@app.route('/student/courses')
-def studentCourses():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    
-    queries={}
-    # Get messages from query parameters
-    message_deleted = request.args.get('message_deleted', None)
-    message_enrolled = request.args.get('message_enrolled', None)
-    
-    # Get student ID from session
-    student_id = session['user'][0]
-    
-    # Get available courses (not enrolled)
-    available_courses_query = """
-        SELECT * FROM courses 
-        WHERE Course_ID NOT IN (
-            SELECT Course_ID FROM enrollment WHERE Student_ID = %s
-        );
-    """
-    mycursor.execute(available_courses_query, (student_id,))
-    queries['available_courses']=querymaker(available_courses_query,(student_id,))
-    # Organize available courses by semester
-    available_courses = {}
-    for course in tuple(tuple(course.values()) for course in mycursor.fetchall()):
-        semester = course[2]
-        if semester not in available_courses:
-            available_courses[semester] = []
-        
-        available_courses[semester].append({
-            "code": course[0],
-            "name": course[1],
-            "credits": course[3]
-        })
-    
-    # Get enrolled courses
-    enrolled_courses_query = """
-        SELECT Course_ID, Course_Name, Semester, Credits 
-        FROM courses 
-        WHERE Course_ID IN (
-            SELECT Course_ID FROM enrollment WHERE Student_ID = %s
-        );
-    """
-    mycursor.execute(enrolled_courses_query, (student_id,))
-    enrolled_courses = tuple(tuple(course.values()) for course in mycursor.fetchall())
-    queries['enrolled_courses']=querymaker(enrolled_courses_query,(student_id,))
-    # Render template with data
-    query=request.args.get('query',None)
-    new_qeuries=request.args.get('queries',None)
-    if new_qeuries:
-        queries=ast.literal_eval(new_qeuries)
-    elif query:
-        queries=None
-    return render_template(
-        'coursesRegistration.html',
-        courses=available_courses,
-        regeistered_courses=enrolled_courses,
-        message_deleted=message_deleted,
-        message_enrolled=message_enrolled,
-        queries=queries,
-        query=query
-    )
-
-@app.route('/student/results')
-def studentResults():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    queries={}
-    query = "SELECT results.Result_ID,results.Course_ID,courses.Course_Name,exams.Exam_Date,exams.Exam_Type,results.Marks_Obtained,results.Grade,results.Status FROM results INNER JOIN courses on courses.Course_ID=results.Course_ID INNER JOIN exams ON exams.Exam_ID=results.Exam_ID WHERE Student_ID=%s AND results.Status='Unevaluated'"
-    mycursor.execute(query, (session['user'][0],))
-    Unevaluated_results = tuple(tuple(result.values()) for result in mycursor.fetchall())
-    queries['Unevaluated_results']=querymaker(query,(session['user'][0],))
-    query = "SELECT results.Result_ID,results.Course_ID,courses.Course_Name,exams.Exam_Date,exams.Exam_Type,results.Marks_Obtained,results.Grade,results.Status FROM results INNER JOIN courses on courses.Course_ID=results.Course_ID INNER JOIN exams ON exams.Exam_ID=results.Exam_ID WHERE Student_ID=%s AND results.Status='Evaluated'"
-    mycursor.execute(query, (session['user'][0],))
-    Evaluated_results = tuple(tuple(result.values()) for result in mycursor.fetchall())
-    queries['Evaluated_results']=querymaker(query,(session['user'][0],))
-    query = "SELECT results.Result_ID,results.Course_ID,courses.Course_Name,exams.Exam_Date,exams.Exam_Type,results.Marks_Obtained,results.Grade,results.Status FROM results INNER JOIN courses on courses.Course_ID=results.Course_ID INNER JOIN exams ON exams.Exam_ID=results.Exam_ID WHERE Student_ID=%s AND results.Status='Locked'"
-    mycursor.execute(query, (session['user'][0],))
-    Locked_results = tuple(tuple(result.values()) for result in mycursor.fetchall())
-    queries['Locked_results']=querymaker(query,(session['user'][0],))
-    return render_template('student_result.html', Unevaluated_results=Unevaluated_results, Evaluated_results=Evaluated_results, Locked_results=Locked_results,queries=queries)
-
-@app.route('/admin/approve_student/<int:student_id>')
-def approve_student(student_id):
-    
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "UPDATE students SET Status='enrolled' WHERE Student_ID=%s"
-    mycursor.execute(query, (student_id,))
-    mydb.commit()
-    display_query=querymaker(query,(student_id,))
-    query="select `Email`, `college_email`,`password` from students where Student_ID=%s"
-    mycursor.execute(query,(student_id,))
-    student=tuple(mycursor.fetchone().values())
-    subject = "Approval and Credentials"
-    body = f"Dear Student,\n\nYour registration has been approved. Here are your credentials:\n\nEmail: {student[1]}\nPassword: {student[2]}\n\nPlease use these credentials to log in to the University Management System.\n\nBest regards,\nUniversity Management System"
-    send_email(app, student[0], subject, body)
-    return redirect(url_for('adminStudents',query=display_query,message_success="Application Approved"))
-
-
-@app.route('/admin/remove_restriction/<int:student_id>')
-def remove_restirction(student_id):
-    
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "UPDATE students SET Status='enrolled' WHERE Student_ID=%s"
-    mycursor.execute(query, (student_id,))
-    mydb.commit()
-    display_query=querymaker(query,(student_id,))
-    query="select `Email`, `college_email`,`password` from students where Student_ID=%s"
-    mycursor.execute(query,(student_id,))
-    student=tuple(mycursor.fetchone().values())
-    subject = "Restriction Removed"
-    body = f"Dear Student,\n\nYour account restriction has been removed. You can now access all the features of the University Management System.\n\nBest regards,\nUniversity Management System"
-    send_email(app, student[0], subject, body)
-    return redirect(url_for('adminStudents',message_success="Restriction Removed",query=display_query))
-
-@app.route('/admin/restrict_student/<int:student_id>')
-def restrict_student(student_id):
-    
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "UPDATE students SET Status='restricted' WHERE Student_ID=%s"
-    mycursor.execute(query, (student_id,))
-    mydb.commit()
-    display_query=querymaker(query,(student_id,))
-    query="select `Email` from students where Student_ID=%s"
-    mycursor.execute(query,(student_id,))
-    student=tuple(mycursor.fetchone().values())
-    subject = "Account Restricted"
-    body = f"Dear Student,\n\nYour account has been restricted for an undefined period. Please contact the administration for further details.\n\nBest regards,\nUniversity Management System"
-    send_email(app, student[0], subject, body)
-
-    return redirect(url_for('adminStudents',message_danger="Student Restricted",query=display_query))
-
-@app.route('/admin/graduate_student/<int:student_id>')
-def graduate_student(student_id):
-    
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "UPDATE students SET Status='graduated' WHERE Student_ID=%s"
-    mycursor.execute(query, (student_id,))
-    mydb.commit()
-
-    return redirect(url_for('adminStudents',message_success="Student Graduated",query=querymaker(query,(student_id,))))
-
-@app.route('/admin/reject_student/<int:student_id>')
-def reject_student(student_id):
-    
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query="select `Email` from students where Student_ID=%s"
-    mycursor.execute(query,(student_id,))
-    student=tuple(mycursor.fetchone().values())
-    query = "DELETE FROM `students` WHERE Student_ID=%s"
-    mycursor.execute(query, (student_id,))
-    mydb.commit()
-    subject = "Application Rejected"
-    body = f"Dear Student,\n\nWe regret to inform you that your application has been rejected. Please contact the administration for further details.\n\nBest regards,\nUniversity Management System"
-    send_email(app, student[0], subject, body)
-
-    return redirect(url_for('adminStudents',message_danger="Student Discarded",query=querymaker(query,(student_id,))))
-
-
-@app.route('/admin/students')
-def adminStudents():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    queries={}
-    query = "SELECT Student_ID,CONCAT(First_Name, ' ', Middle_Name, ' ', Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Pending';"
-    mycursor.execute(query)
-    pending_students = tuple(tuple(student.values()) for student in mycursor.fetchall())
-    queries['pending_students']=querymaker(query,None)
-    query = "SELECT Student_ID,CONCAT(First_Name, ' ', Middle_Name, ' ', Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Enrolled';"
-    mycursor.execute(query)
-    enrolled_students = tuple(tuple(student.values()) for student in mycursor.fetchall())
-    queries['enrolled_students']=querymaker(query,None)
-    
-    query = "SELECT Student_ID,CONCAT(First_Name, ' ', Middle_Name, ' ', Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Graduated';"
-    mycursor.execute(query)
-    graduted_students = tuple(tuple(student.values()) for student in mycursor.fetchall())
-    queries['graduted_students']=querymaker(query,None)
-
-
-    query = "SELECT Student_ID,CONCAT(First_Name, ' ', Middle_Name, ' ', Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Restricted';"
-    mycursor.execute(query)
-    restricated_students = tuple(tuple(student.values()) for student in mycursor.fetchall())
-    queries['restricated_students']=querymaker(query,None)
-
-    query=request.args.get('query',None)
-    if query:
-        queries=None
-    return render_template('manage_students.html', pending_students=pending_students, enrolled_students=enrolled_students, graduted_students=graduted_students, restricated_students=restricated_students,queries=queries,query=query,message_success=request.args.get('message_success',None),message_danger=request.args.get('message_danger',None))
-
-@app.route('/admin/view_student/<int:student_id>')
-def view_student(student_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    queries={}
-    details={}
-    query = "SELECT * FROM students WHERE Student_ID=%s"
-    mycursor.execute(query, (student_id,))
-    details["student"] = tuple(mycursor.fetchone().values())
-    queries['student']=querymaker(query,(student_id,))
-    query="select c.Course_ID,c.Course_Name,c.Credits,c.Semester,e.Enrolled_IN from courses c INNER JOIN enrollment e on e.Course_ID=c.Course_ID WHERE e.Student_ID=%s;"
-    mycursor.execute(query,(student_id,))
-    details["courses"]=tuple(tuple(course.values()) for course in mycursor.fetchall())
-    queries['courses']=querymaker(query,(student_id,))
-    query="select Phone from student_phone_no where Student_ID=%s;"
-    mycursor.execute(query,(student_id,))
-    details["contacts"]=tuple(tuple(contact.values()) for contact in mycursor.fetchall())
-    queries['contacts']=querymaker(query,(student_id,))
-    
-    query=request.args.get('query',None)
-    if query:
-        queries=None
-    return render_template('view_student.html', **details,queries=queries,message_success=request.args.get('message_success',None),message_danger=request.args.get('message_danger',None),query=query)
-
-
-@app.route('/admin/view_student/<int:student_id>/UnEnroll/<string:course_id>')
-def UnEnroll(student_id, course_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "DELETE FROM `enrollment` WHERE Student_ID=%s AND Course_ID=%s"
-    mycursor.execute(query, (student_id, course_id))
-    mydb.commit()
-    
-    return redirect(url_for('view_student', student_id=student_id,query=querymaker(query,(student_id,course_id)),message_danger="Course Unenrolled"))
-
-
-@app.route('/admin/courses/filter_sorted',methods=['POST'])
-def filter_sorted():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    filters={}
-    sorted_by={}
-    if request.method == 'POST':
-        # Extract filter values from form
-        if request.form.get('course_id_check'):
-            filters['Course_ID'] = request.form.get('course_id')
-        if request.form.get('course_name_check'):
-            filters['Course_Name'] = request.form.get('course_name')
-        if request.form.get('semester_check'):
-            filters['Semester'] = request.form.get('semester')
-        if request.form.get('credits_check'):
-            filters['Credits'] = request.form.get('credits')
-        if request.form.get('price_check'):
-            filters['Price'] = request.form.get('price_id')
-        # Extract sorting parameters
-        if request.form.get('sort_by_course_id_check'):
-            sorted_by['Course_ID'] = request.form.get('sort_by_course_id')
-        if request.form.get('sort_by_course_name_check'):
-            sorted_by['Course_Name'] = request.form.get('sort_by_course_id_name')
-
-        if request.form.get('sort_by_semester_check'):
-            sorted_by['Semester'] = request.form.get('sort_by_semester')
-        if request.form.get('sort_by_credits_check'):
-            sorted_by['Credits'] = request.form.get('sort_by_credits')
-        if request.form.get('sort_by_price_check'):
-            sorted_by['Price'] = request.form.get('sort_by_price')
-
-
-
-        order_clauses = []
-        for field, direction in sorted_by.items():
-            if direction == 'Ascending':
-                order_clauses.append(f"{field} ASC")
-            elif direction == 'Descending':
-                order_clauses.append(f"{field} DESC")
-        # Build query with filters
-        query = "SELECT * FROM courses"
-        
-        # Add WHERE clause if filters exist
-        if filters:
-            query += " WHERE " + " AND ".join([f"{key} LIKE %s" for key in filters.keys()])
-            # Add wildcard for partial matches
-            values = tuple([f"%{value}%" for value in filters.values()])
-        else:
-            values = ()
-            
-        # Add ORDER BY clause if sorting parameters exist
-        if order_clauses:
-            query += " ORDER BY " + ", ".join(order_clauses)
-        # Execute query with filter values
-        mycursor.execute(query, values)
-        # Execute query with filter values
-        courses = tuple(tuple(course.values()) for course in mycursor.fetchall())
-        
-        # Create a display version of the query with actual values for debugging
-        display_query = querymaker(query, values)
-        
-        return render_template('manage_courses.html', courses=courses, query=display_query, message="Filtered and Sorted")
-    query = "SELECT * FROM courses"
-    mycursor.execute(query)
-    courses = tuple(tuple(course.values()) for course in mycursor.fetchall())    
-    return render_template('manage_courses.html', courses=courses)
-
-
-
-@app.route('/admin/courses')
-def adminCourses():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "SELECT * FROM courses"
-    mycursor.execute(query)
-    display_query = request.args.get('query', querymaker(query,None))
-    message = request.args.get('message', None)
-    courses = tuple(tuple(course.values()) for course in mycursor.fetchall())
-    return render_template('manage_courses.html', courses=courses, query=display_query, message=message)
-
-@app.route('/admin/courses/add_course',methods=['POST'])
-def add_course():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    id = request.form.get('course_id')
-    name = request.form.get('course_name')
-    credits = request.form.get('credits')
-    price = request.form.get('price')
-    semester = request.form.get('semester')
-    mycursor.execute("SELECT * FROM courses WHERE Course_ID=%s", (id,))
-    values=mycursor.fetchone()
-    if values:
-        return "Course ID already exists"
-    query = "INSERT INTO `courses`(`Course_ID`, `Course_Name`, `Credits`, `Semester`,`Price`) VALUES (%s, %s, %s, %s,%s)"
-    values = (id, name, credits, semester, price)
-    mycursor.execute(query, values)
-    mydb.commit()
-    return redirect(url_for('adminCourses'))
-
-@app.route('/admin/course/update/<string:course_id>', methods=['GET', 'POST'])
-def update_course(course_id):
-    
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    new_course_id = request.form.get(f"course_id_{course_id}")
-    new_course_name = request.form.get(f"course_name_{course_id}")
-    new_course_credits = request.form.get(f"credits_{course_id}")
-    new_course_semester = request.form.get(f"semester_{course_id}")
-    new_course_price = request.form.get(f"price_{course_id}")
-    query=None
-    if(new_course_id!=course_id):
-        query="SELECT * FROM courses WHERE Course_ID=%s"
-        mycursor.execute(query,(new_course_id,))
-        
-        course=tuple((mycursor.fetchone()).values())
-        if course:
-            return "can't update course id as it already exists"
-        else:
-            query="UPDATE courses SET  Course_ID=%s,Course_Name=%s, Credits=%s, Semester=%s,price=%s WHERE Course_ID=%s"
-            values=(new_course_id,new_course_name,new_course_credits,new_course_semester,new_course_price,course_id)
-            mycursor.execute(query,values)
-            mydb.commit()
-    else:
-        query="UPDATE courses SET  Course_Name=%s, Credits=%s, Semester=%s,price=%s WHERE Course_ID=%s"
-        values=(new_course_name,float(new_course_credits),new_course_semester,new_course_price,course_id)
-        mycursor.execute(query,values)
-        mydb.commit()
-    display_query=querymaker(query,values)    
-    return redirect(url_for('adminCourses',query=display_query,message="Course Updated Successfully"))
-        
-@app.route('/admin/course/delete/<string:course_id>')
-def delete_course(course_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "DELETE FROM `courses` WHERE Course_ID=%s"
-    mycursor.execute(query, (course_id,))
-    display_query=querymaker(query,(course_id,))
-    mydb.commit()
-    return redirect(url_for('adminCourses',query=display_query,message="Course Deleted Successfully"))
-
-@app.route('/admin/faculty')
-def adminFaculty():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    queries={}
-    query="SELECT faculty.Faculty_ID, CONCAT(faculty.First_Name, ' ', COALESCE(faculty.Middle_Name, ''), ' ', faculty.Last_Name) AS Name, faculty.Date_of_Joining, faculty.Designation, faculty.Mail, faculty.Official_Mail, courses.Course_Name, department.Department_Name FROM faculty INNER JOIN courses ON courses.Course_ID = faculty.Course_ID INNER JOIN department ON department.Department_ID = faculty.Department_ID WHERE faculty.Status = 'Pending';"
-    mycursor.execute(query)
-    pending_faculty=tuple(tuple(faculty.values()) for faculty in mycursor.fetchall())
-    queries['pending_query']=querymaker(query,None)
-    query="SELECT faculty.Faculty_ID, CONCAT(faculty.First_Name, ' ', COALESCE(faculty.Middle_Name, ''), ' ', faculty.Last_Name) AS Name, faculty.Date_of_Joining, faculty.Designation, faculty.Mail, faculty.Official_Mail, courses.Course_Name, department.Department_Name FROM faculty INNER JOIN courses ON courses.Course_ID = faculty.Course_ID INNER JOIN department ON department.Department_ID = faculty.Department_ID WHERE faculty.Status = 'Active';"
-    mycursor.execute(query)
-    active_faculty=tuple(tuple(faculty.values()) for faculty in mycursor.fetchall())
-    queries['active_query']=querymaker(query,None)
-    display_query=request.args.get('query',None)
-    message_success=request.args.get('message_success',None)
-    message_danger=request.args.get('message_danger',None)
-    if display_query:
-        queries=None
-    return render_template('manage_faculty.html', pending=pending_faculty, active=active_faculty, query=display_query,queries=queries,message_danger=message_danger,message_success=message_success)
-
-
-@app.route('/admin/faculty/view_faculty/<int:faculty_id>')
-def view_faculty(faculty_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "SELECT faculty.Faculty_ID, CONCAT(faculty.First_Name,' ', faculty.Middle_Name, ' ', faculty.Last_Name) AS Name, faculty.Date_of_Joining, faculty.Designation, faculty.Mail, faculty.Official_Mail, faculty.Course_ID, courses.Course_Name,faculty.Department_ID,department.Department_Name,faculty.Status FROM faculty INNER JOIN courses ON courses.Course_ID =faculty.Course_ID INNER JOIN department ON department.Department_ID=faculty.Department_ID WHERE faculty.Faculty_ID=%s;"
-    mycursor.execute(query, (faculty_id,))
-    display_query=querymaker(query,(faculty_id,))
-    result = tuple(tuple(result.values()) for result in mycursor.fetchall())
-    if not result:
-        return "Faculty not found", 404
-    faculty = result[0]
-    query = "SELECT Phone FROM faculty_phone_no WHERE Faculty_ID=%s"
-    mycursor.execute(query, (faculty_id,))
-    phones = tuple(tuple(phone.values()) for phone in mycursor.fetchall())
-    return render_template('view_faculty.html', faculty=faculty, phones=phones,query=display_query)
-
-
-@app.route('/admin/faculty/approve_faculty/<int:faculty_id>')
-def approve_faculty(faculty_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "UPDATE faculty SET Status='Active' WHERE Faculty_ID=%s"
-    mycursor.execute(query, (faculty_id,))
-    mydb.commit()
-    display_query=querymaker(query,(faculty_id,))
-    query="select `Mail`,`Official_Mail`,`Password` from faculty where Faculty_ID=%s"
-    mycursor.execute(query,(faculty_id,))
-    faculty=tuple((mycursor.fetchone()).values())
-    subject = "Approval and Credentials"
-    body = f"Dear Faculty,\n\nYour registration has been approved. Here are your credentials:\n\nEmail: {faculty[1]}\nPassword: {faculty[2]}\n\nPlease use these credentials to log in to the University Management System.\n\nBest regards,\nUniversity Management System"
-    send_email(app, faculty[0], subject, body)
-    return redirect(url_for('adminFaculty',query=display_query,message_success="Faculty Approved"))
-
-
-@app.route('/admin/faculty/reject_faculty/<int:faculty_id>')
-def reject_faculty(faculty_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query="select `Mail` from faculty where Faculty_ID=%s"
-    mycursor.execute(query,(faculty_id,))
-    faculty=tuple((mycursor.fetchone()).values())
-
-    query = "DELETE FROM faculty WHERE Faculty_ID=%s"
-    mycursor.execute(query, (faculty_id,))
-    mydb.commit()
-    subject = "Application Rejected"
-    body = f"Dear Faculty,\n\nWe regret to inform you that your application has been rejected. Please contact the administration for further details.\n\nBest regards,\nUniversity Management System"
-    send_email(app, faculty[0], subject, body)
-    return redirect(url_for('adminFaculty',query=querymaker(query,(faculty_id,)),message_danger="Faculty Rejected"))
-
-@app.route('/admin/faculty/delete_faculty/<int:faculty_id>')
-def delete_faculty(faculty_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "DELETE FROM faculty WHERE Faculty_ID=%s"
-    mycursor.execute(query, (faculty_id,))
-    mydb.commit()
-
-    return redirect(url_for('adminFaculty',query=querymaker(query,(faculty_id,)),message_danger="Faculty Deleted"))
-
-@app.route('/admin/departments')
-def adminDepartments():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    queries={}
-    query = "SELECT department.Department_ID, department.Department_Name, department.Head_of_Department AS HOD_ID, CONCAT(hod.First_Name, ' ', COALESCE(hod.Middle_Name, ''), ' ', hod.Last_Name) AS HOD_Name, COUNT(faculty.Faculty_ID) AS FacultyCount FROM department INNER JOIN faculty ON faculty.Department_ID = department.Department_ID LEFT JOIN faculty AS hod ON department.Head_of_Department = hod.Faculty_ID WHERE faculty.Status != 'Pending' GROUP BY department.Department_ID, department.Department_Name, department.Head_of_Department, hod.First_Name, hod.Middle_Name, hod.Last_Name;"
-    mycursor.execute(query)
-    active_departments = tuple(tuple(department.values()) for department in mycursor.fetchall())
-    queries['active_query']=querymaker(query,None)
-    query = "SELECT Department_ID,Department_Name FROM `department` WHERE Department_ID NOT IN (SELECT department.Department_ID FROM department INNER JOIN faculty ON faculty.Department_ID = department.Department_ID WHERE faculty.Status != 'Pending' GROUP BY department.Department_ID, department.Department_Name, department.Head_of_Department);"
-    mycursor.execute(query)
-    inactive_departments = tuple(tuple(department.values()) for department in mycursor.fetchall())
-    queries['inctive_query']=querymaker(query,None)
-    query=request.args.get('query',None)
-    if query:
-        queries=None      
-    return render_template('manage_department.html', active_departments=active_departments, inactive_departments=inactive_departments,queries=queries,query=query,message_success=request.args.get('message_success',None),message_danger=request.args.get('message_danger',None),department_id_error=request.args.get('department_id_error',None),department_name_error=request.args.get('department_name_error',None),department_id_error_form=request.args.get('department_id_error_form',None),department_name_error_form=request.args.get('department_name_error_form',None),message_danger_form=request.args.get('message_danger_form',None),department_id_form=request.args.get('department_id_form',None),department_name_form=request.args.get('department_name_form',None))     
-
-
-@app.route('/admin/departments/add_department', methods=['POST'])
-def add_department():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    department_id = request.form.get('department_id')
-    department_name_error_form=None
-    department_id_error_form=None
-    if not department_id:
-        department_id_error_form = "Department ID cannot be empty"
-    department_name = request.form.get('department_name')
-    if not department_name:
-        department_name_error_form = "Department Name cannot be empty"
-    if department_id_error_form or department_name_error_form:
-        return redirect(url_for('adminDepartments',department_id_error_form=department_id_error_form,department_name_error_form=department_name_error_form,department_id_form=department_id,department_name_form=department_name))
-
-
-    mycursor.execute("SELECT * FROM department WHERE Department_ID=%s", (department_id,))
-    if mycursor.fetchone():
-        return redirect(url_for('adminDepartments',department_id_error_form="Department ID already exists",department_id_form=department_id,department_name_form=department_name))
-    
-    mycursor.execute("SELECT * FROM department WHERE Department_Name=%s", (department_name,))
-    if mycursor.fetchone():
-        return redirect(url_for('adminDepartments',department_name_error_form="Department Name already exists",department_id_form=department_id,department_name_form=department_name))
-    
-    query = "INSERT INTO `department`(`Department_ID`, `Department_Name`) VALUES (%s, %s)"
-    values = (department_id, department_name)
-    mycursor.execute(query, values)
-    mydb.commit()
-    return redirect(url_for('adminDepartments',query=querymaker(query,values),message_success="Department Added Successfully"))
-
-@app.route('/admin/departments/update/<string:department_id>', methods=['POST'])
-def update_department(department_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query="SELECT Department_Name FROM department WHERE Department_ID=%s"
-    mycursor.execute(query,(department_id,))
-    department_name=tuple((mycursor.fetchone()).values())[0] 
-    # Get form data
-    new_department_id = request.form.get("department_id", "").strip()
-    new_department_name = request.form.get("department_name", "").strip()
-    
-    message_success = None
-    message_danger = None
-    query = None
-    values = None
-    department_id_error = None
-    department_name_error= None    
-    # Validate inputs
-    if not new_department_id:
-        department_id_error = "Department ID cannot be empty"
-    if not new_department_name:
-        department_name_error = "Department Name cannot be empty"
-    
-    # If validation passes, proceed with update
-    if not department_id_error and not department_name_error:
-        flag = False
-        
-        # Check if the department ID is being changed
-        if new_department_id != department_id:
-            # Check if new ID already exists
-            mycursor.execute("SELECT count(*) FROM department WHERE Department_ID=%s", (new_department_id,))
-            if tuple((mycursor.fetchone()).values())[0] > 0:
-                message_danger = "Department ID already exists"
-                flag = True
-        
-        # Check if the department name is being changed and if it already exists
-        if new_department_name != department_name:
-            mycursor.execute("SELECT count(*) FROM department WHERE Department_Name=%s AND Department_ID!=%s", (new_department_name, department_id))
-            if tuple((mycursor.fetchone()).values())[0] > 0:
-                message_danger = "Department Name already exists"
-                flag = True
-        
-        if not flag:
-            if new_department_id != department_id:
-                # Update both ID and name
-                query = "UPDATE department SET Department_ID=%s, Department_Name=%s WHERE Department_ID=%s"
-                values = (new_department_id, new_department_name, department_id)
-            else:
-                # Update name only
-                query = "UPDATE department SET Department_Name=%s WHERE Department_ID=%s"
-                values = (new_department_name, department_id)
-                
-            mycursor.execute(query, values)
-            mydb.commit()
-            message_success = "Department updated successfully"
-    
-        query=querymaker(query,values)
-        return redirect(url_for('adminDepartments',query=query,message_success=message_success,message_danger=message_danger,department_id_error=department_id_error,department_name_error=department_name_error))
-    
-    return redirect(url_for('adminDepartments',query=query,message_success=message_success,message_danger=message_danger,department_id_error=department_id_error,department_name_error=department_name_error))
-
-
-
-
-
-@app.route('/admin/departments/delete/<string:department_id>')
-def delete_department(department_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "DELETE FROM `department` WHERE Department_ID=%s"
-    mycursor.execute(query, (department_id,))
-    mydb.commit()
-    query=querymaker(query,(department_id,))
-    return redirect(url_for('adminDepartments',query=query,message_danger="Department Deleted Successfully"))
-
-
-
-@app.route('/admin/view_department/<string:department_id>', methods=['GET', 'POST'])
-def view_department(department_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    queries={}
-    query="SELECT department.Department_ID, department.Department_Name, department.Head_of_Department AS HOD_ID, CONCAT(hod.First_Name, ' ', COALESCE(hod.Middle_Name, ''), ' ', hod.Last_Name) AS HOD_Name, COUNT(faculty.Faculty_ID) AS Faculty_Count FROM department INNER JOIN faculty ON department.Department_ID = faculty.Department_ID LEFT JOIN faculty AS hod ON department.Head_of_Department = hod.Faculty_ID WHERE department.Department_ID = %s AND faculty.Status='Active' GROUP BY department.Department_ID, department.Department_Name, department.Head_of_Department, hod.First_Name, hod.Middle_Name, hod.Last_Name;"
-    mycursor.execute(query, (department_id,))
-    queries['department_query']=querymaker(query,(department_id,))
-    try:
-        department = (tuple(tuple(department.values()) for department in mycursor.fetchall()))[0]
-    except :
-        department=mycursor.fetchone()
-    query = "SELECT Faculty_ID, CONCAT(First_Name, ' ', COALESCE(Middle_Name, ''), ' ', Last_Name) AS Name, Designation, Mail, Official_Mail FROM faculty WHERE Department_ID=%s AND Status='Active'"
-    mycursor.execute(query, (department_id,))
-    faculties= tuple(tuple(faculty.values()) for faculty in mycursor.fetchall())
-    queries['faculty_query']=querymaker(query,(department_id,))
-    query=request.args.get('query',None)
-    if query:
-        queries=None
-    faculty_name_error=request.args.get('faculty_name_error',None)
-    faculty_id_error=request.args.get('faculty_id_error',None)
-    faculty_mail_error=request.args.get('faculty_mail_error',None)
-    if faculty_id_error or faculty_name_error or faculty_mail_error:
-        query=None
-    return render_template('view_department.html', department=department, faculties=faculties,queries=queries,query=query,department_id_error=request.args.get('department_id_error',None),faculty_name_error=faculty_name_error,faculty_id_error=faculty_id_error,faculty_mail_error=faculty_mail_error,message_danger=request.args.get('message_danger',None),message_success=request.args.get('message_success',None),message_success_hod=request.args.get('message_success_hod',None))
-
-
-@app.route('/admin/view_department/<string:department_id>/appoint_HOD', methods=['GET', 'POST'])
-def appoint_HOD(department_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
-    faculty_id = request.form.get('hod_id')
-    query = "UPDATE department SET Head_of_Department=%s WHERE Department_ID=%s"
-    mycursor.execute(query, (faculty_id, department_id))
-    mydb.commit()
-    query=querymaker(query,(faculty_id,department_id))
-    return redirect(url_for('view_department', department_id=department_id,message_success_hod="HOD Appointed Successfully",query=query))
-
-
-@app.route('/admin/view_department/<string:department_id>/update_faculty/<string:faculty_id>', methods=['GET', 'POST'])
-def update_faculty_(department_id, faculty_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-
-    new_faculty_id = request.form.get(f"faculty_id_{faculty_id}")
-    new_faculty_name = request.form.get(f"faculty_name_{faculty_id}")
-    new_faculty_mail = request.form.get(f"faculty_mail_{faculty_id}")
-
-    faculty_name_error = None
-    faculty_id_error = None
-    faculty_mail_error = None
-
-    # Validate faculty name
-    new_faculty_name_parts = new_faculty_name.strip().split(' ')
-    if len(new_faculty_name_parts) == 0:
-        faculty_name_error = "Faculty Name cannot be empty"
-    elif len(new_faculty_name_parts[0]) < 3:
-        faculty_name_error = "Faculty Name should be at least 3 characters"
-    else:
-        FirstName = new_faculty_name_parts[0]
-        MiddleName = ' '.join(new_faculty_name_parts[1:-1]) if len(new_faculty_name_parts) > 2 else ''
-        LastName = new_faculty_name_parts[-1] if len(new_faculty_name_parts) > 1 else ''
-
-    # Validate faculty email
-    if not new_faculty_mail:
-        faculty_mail_error = "Faculty Mail cannot be empty"
-    elif not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', new_faculty_mail):
-        faculty_mail_error = "Invalid email format"
-
-    if faculty_name_error or faculty_id_error or faculty_mail_error:
-        return redirect(url_for('view_department', department_id=department_id, faculty_name_error=faculty_name_error, faculty_id_error=faculty_id_error, faculty_mail_error=faculty_mail_error))
-
-    if new_faculty_id != faculty_id:
-        mycursor.execute("SELECT * FROM faculty WHERE Faculty_ID=%s", (new_faculty_id,))
-        if tuple((mycursor.fetchone()).values()):
-            return redirect(url_for('view_department', department_id=department_id, faculty_id_error="Faculty ID already exists"))
-        query = "UPDATE faculty SET Faculty_ID=%s, First_Name=%s, Middle_Name=%s, Last_Name=%s, Mail=%s WHERE Faculty_ID=%s"
-        values = (new_faculty_id, FirstName, MiddleName, LastName, new_faculty_mail, faculty_id)
-    else:
-        query = "UPDATE faculty SET First_Name=%s, Middle_Name=%s, Last_Name=%s, Mail=%s WHERE Faculty_ID=%s"
-        values = (FirstName, MiddleName, LastName, new_faculty_mail, faculty_id)
-
-    mycursor.execute(query, values)
-    mydb.commit()
-
-    return redirect(url_for('view_department', department_id=department_id,query=querymaker(query,values),message_success="Faculty Updated Successfully"))
-
-
-
-@app.route('/admin/view_department/<string:department_id>/delete_faculty/<int:faculty_id>', methods=['GET', 'POST'])
-def delete_faculty_(department_id, faculty_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    # Delete the specified faculty
-    query = "DELETE FROM faculty WHERE Faculty_ID=%s"
-    mycursor.execute(query, (faculty_id,))
-    mydb.commit()
-
-    # Check if there are any faculty left in the department
-    check_query = "SELECT COUNT(*) FROM faculty WHERE Department_ID=%s"
-    mycursor.execute(check_query, (department_id,))
-    count = tuple((mycursor.fetchone()).values())[0]  # Fetch the count value
-
-    if count == 0:
-        # If no faculty are left, redirect to adminDepartments
-        return redirect(url_for('adminDepartments'))
-
-    # Otherwise, redirect back to the view_department page
-    return redirect(url_for('view_department', department_id=department_id,query=querymaker(query,(faculty_id,)),message_danger="Faculty Deleted Successfully"))
-
-@app.route('/admin/fees/delete/<int:fee_id>')
-def delete_fee(fee_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "DELETE FROM fees WHERE Fee_ID=%s"
-    mycursor.execute(query, (fee_id,))
-    mydb.commit()
-    return redirect(url_for('adminFees'))
-
-@app.route('/admin/fees/update/<int:fee_id>', methods=['POST'])
-def update_fee(fee_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    if request.method == 'POST':
-        amount = request.form.get(f'amount_{fee_id}')
-        issued_date = request.form.get(f'issued_date_{fee_id}')
-        fee_type = request.form.get(f'type_{fee_id}')
-        payment_date = request.form.get(f'payment_date_{fee_id}')
-        status = request.form.get(f'status_{fee_id}')
-        if status not in ['Pending', 'Paid']:
-            return "Invalid status value"
-        payment_id = request.form.get(f'payment_id_{fee_id}')
-
-        query = """
-            UPDATE fees 
-            SET  Amount=%s, Issued_Date=%s, Type=%s, Payment_Date=%s, Status=%s, Payment_ID=%s 
-            WHERE Fee_ID=%s
-        """
-        values = (amount, issued_date, fee_type, payment_date, status, payment_id, fee_id)
-        mycursor.execute(query, values)
-        mydb.commit()
-        return redirect(url_for('adminFees'))
-    
-
-@app.route('/admin/fees/filter/', methods=['POST'])
-def filter_fees():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    filters = {}
-    sorted_by = {}
-    if request.method == 'POST':
-        # Extract filter values from form
-        if request.form.get('fee_id_check'):
-            filters['Fee_ID'] = request.form.get('fee_id')
-        if request.form.get('student_id_check'):
-            filters['Student_ID'] = request.form.get('student_id')
-        if request.form.get('exam_id_check'):
-            filters['Exam_ID'] = request.form.get('exam_id')
-        if request.form.get('course_id_check'):
-            filters['Course_ID'] = request.form.get('course_id')
-        if request.form.get('amount_check'):
-            filters['Amount'] = request.form.get('amount')
-        if request.form.get('issued_date_check'):
-            filters['Issued_Date'] = request.form.get('issued_date')
-        if request.form.get('type_check'):
-            filters['Type'] = request.form.get('type')
-        if request.form.get('payment_date_check'):
-            filters['Payment_Date'] = request.form.get('payment_date')
-        if request.form.get('status_check'):
-            filters['Status'] = request.form.get('status')
-        if request.form.get('payment_id_check'):
-            filters['Payment_ID'] = request.form.get('payment_id')
-            
-        # Extract sorting parameters
-        if request.form.get('sort_by_fee_id_check'):
-            sorted_by['Fee_ID'] = request.form.get('sort_by_fee_id')
-        if request.form.get('sort_by_student_id_check'):
-            sorted_by['Student_ID'] = request.form.get('sort_by_student_id')
-        if request.form.get('sort_by_amount_check'):
-            sorted_by['Amount'] = request.form.get('sort_by_amount')
-        if request.form.get('sort_by_issued_date_check'):
-            sorted_by['Issued_Date'] = request.form.get('sort_by_issued_date')
-        if request.form.get('sort_by_type_check'):
-            sorted_by['Type'] = request.form.get('sort_by_type')
-        if request.form.get('sort_by_status_check'):
-            sorted_by['Status'] = request.form.get('sort_by_status')
-            
-        # Add order by clause if sorting is specified
-        order_clauses = []
-        for field, direction in sorted_by.items():
-            if direction == 'Ascending':
-                order_clauses.append(f"{field} ASC")
-            elif direction == 'Descending':
-                order_clauses.append(f"{field} DESC")
-                
-        # Build query with filters
-        query = "SELECT * FROM fees"
-        
-        # Add WHERE clause if filters exist
-        if filters:
-            query += " WHERE " + " AND ".join([f"{key} LIKE %s" for key in filters.keys()])
-            # Add wildcard for partial matches
-            values = tuple([f"%{value}%" for value in filters.values()])
-        else:
-            values = ()
-            
-        # Add ORDER BY clause if sorting parameters exist
-        if order_clauses:
-            query += " ORDER BY " + ", ".join(order_clauses)
-            
-        # Execute query with filter values
-        mycursor.execute(query, values)
-        fees = tuple(tuple(fee.values()) for fee in mycursor.fetchall())
-        
-        # Create a display version of the query with actual values for debugging
-        display_query = querymaker(query, values)
-        
-        return render_template('manage_fees.html', fees=fees, query=display_query, message="Filtered and Sorted")
-    
-    query = "SELECT * FROM fees"
-    mycursor.execute(query)
-    fees = tuple(tuple(fee.values()) for fee in mycursor.fetchall())
-    return render_template('manage_fees.html', fees=fees)
-    
-
-
-
-@app.route('/admin/fees')
-def adminFees():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "SELECT * FROM fees"
-    mycursor.execute(query)
-    fees = tuple(tuple(fee.values()) for fee in mycursor.fetchall())
-    display_query = request.args.get('query', querymaker(query, None))
-    return render_template('manage_fees.html', fees=fees, query=display_query)
-@app.route('/admin/exams')
-def adminExams():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    queries={}
-    query = "SELECT exams.Exam_ID, exams.Course_ID, exams.Exam_Date, exams.Exam_Duration, exams.Exam_Type, exams.Venue, exams.Status,courses.Course_Name,courses.Credits FROM exams INNER JOIN courses ON exams.Course_ID=courses.Course_ID WHERE exams.Exam_Date>=CURRENT_DATE ;"
-    mycursor.execute(query)
-    upcoming_exams = tuple(tuple(exam.values()) for exam in mycursor.fetchall())
-    queries['upcoming_exams_query']=querymaker(query,None)
-    query = "SELECT exams.Exam_ID, exams.Course_ID, exams.Exam_Date, exams.Exam_Duration, exams.Exam_Type, exams.Venue, exams.Status,courses.Course_Name,courses.Credits FROM exams INNER JOIN courses ON exams.Course_ID=courses.Course_ID WHERE exams.Exam_Date<CURRENT_DATE AND exams.Status!='Locked';"
-    mycursor.execute(query)
-    recent_Unevaluated_exams = tuple(tuple(exam.values()) for exam in mycursor.fetchall())
-    queries['recent_Unevaluated_exams_query']=querymaker(query,None)
-    query = "SELECT exams.Exam_ID, exams.Course_ID, exams.Exam_Date, exams.Exam_Duration, exams.Exam_Type, exams.Venue, exams.Status,courses.Course_Name,courses.Credits FROM exams INNER JOIN courses ON exams.Course_ID=courses.Course_ID WHERE exams.Exam_Date<CURRENT_DATE AND exams.Status='Locked';"
-    mycursor.execute(query)
-    recent_Evaluated_exams = tuple(tuple(exam.values()) for exam in mycursor.fetchall())
-    queries['recent_Evaluated_exams_query']=querymaker(query,None)
-    display_query=request.args.get('query',None)
-    if  display_query:
-        queries=None
-    errors = ast.literal_eval(request.args.get('errors', '{}'))
-    if errors:
-        queries=None
-    return render_template('manage_exams.html', upcoming_exams=upcoming_exams, recent_Unevaluated_exams=recent_Unevaluated_exams, recent_Evaluated_exams=recent_Evaluated_exams,queries=queries,query=display_query,errors=errors,message_success=request.args.get('message_success',None),message_danger=request.args.get('message_danger',None))
-
-@app.route('/admin/exams/update_exam/<int:exam_id>/', methods=['POST'])
-def update_exam_admin(exam_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    errors={}
-    new_exam_id = int(request.form.get(f'exam_id_{exam_id}'))
-    new_exam_date = request.form.get(f'exam_date_{exam_id}')
-    new_exam_duration = request.form.get(f'exam_duration_{exam_id}')
-    if float(new_exam_duration)<=0:
-        errors['exam_duration_error']="Exam Duration cannot be less than or equal to 0"
-    new_exam_type = request.form.get(f'exam_type_{exam_id}')
-    if new_exam_date<datetime.datetime.now().strftime('%Y-%m-%d'):
-        errors['exam_date_error']="Exam Date cannot be in the past"
-    if not new_exam_type:
-        query = "SELECT Exam_Type FROM exams WHERE Exam_ID=%s"
-        mycursor.execute(query, (exam_id,))
-        current_exam_type = tuple((mycursor.fetchone()).values())
-        if current_exam_type:
-            new_exam_type = current_exam_type[0]
-    new_venue = request.form.get(f'venue_{exam_id}')
-    if not new_venue:
-        errors['venue_error'] = "Venue cannot be empty"
-    course_id = request.form.get(f'course_id_{exam_id}')
-    if new_exam_id != exam_id:
-        if exam_exists(new_exam_id):
-            errors['exam_id_error'] = "Exam ID already exists"
-        if exam_type_exists(course_id, new_exam_type, new_exam_id):
-            errors['exam_type_error'] = "Exam Type already exists"
-        update_exam(new_exam_id, new_exam_date, new_exam_duration, new_exam_type, new_venue, exam_id)
-    else:
-        if exam_type_exists(course_id, new_exam_type, exam_id):
-            errors['exam_type_error'] = "Exam Type already exists"
-        if errors:
-            return redirect(url_for('adminExams',errors=errors))
-        query=update_exam(None, new_exam_date, new_exam_duration, new_exam_type, new_venue, exam_id)
-
-    return redirect(url_for('adminExams',message_success="Exam Updated Successfully",query=query))
-
-def exam_exists(exam_id):
-    query = "SELECT * FROM exams WHERE Exam_ID=%s"
-    mycursor.execute(query, (exam_id,))
-    return tuple((mycursor.fetchone()).values()) is not None
-
-def exam_type_exists(course_id, exam_type, exam_id):
-    query = "SELECT COUNT(*) FROM exams WHERE Course_ID=%s AND Exam_Type=%s AND Exam_ID!=%s"
-    mycursor.execute(query, (course_id, exam_type, exam_id))
-    return tuple((mycursor.fetchone()).values())[0] > 0
-
-def update_exam(new_exam_id, new_exam_date, new_exam_duration, new_exam_type, new_venue, exam_id):
-    if new_exam_id:
-        query = "UPDATE exams SET Exam_ID=%s, Exam_Date=%s, Exam_Duration=%s, Exam_Type=%s, Venue=%s WHERE Exam_ID=%s"
-        values = (new_exam_id, new_exam_date, new_exam_duration, new_exam_type, new_venue, exam_id)
-    else:
-        query = "UPDATE exams SET Exam_Date=%s, Exam_Duration=%s, Exam_Type=%s, Venue=%s WHERE Exam_ID=%s"
-        values = (new_exam_date, new_exam_duration, new_exam_type, new_venue, exam_id)
-    mycursor.execute(query, values)
-    mydb.commit()
-    return querymaker(query, values)
-
-
-@app.route('/admin/exams/delete_exam/<int:exam_id>/')
-def delete_exam_admin(exam_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "DELETE FROM exams WHERE Exam_ID=%s"
-    mycursor.execute(query, (exam_id,))
-    mydb.commit()
-    
-    return redirect(url_for('adminResults',query=querymaker(query,(exam_id,)),message_danger="Exam Deleted Successfully"))
-
-@app.route('/admin/results/<int:exam_id>/view', methods=['GET', 'POST'])
-def view_results_admin(exam_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    queries={}
-    query = "SELECT results.Result_ID,results.Student_ID,CONCAT(students.First_Name,' ',students.Middle_Name,' ',students.Last_Name) AS Name,results.Marks_Obtained,results.Grade from results INNER JOIN students ON results.Student_ID=students.Student_ID INNER JOIN courses on results.Course_ID=courses.Course_ID WHERE results.Exam_ID=%s;"
-    mycursor.execute(query, (exam_id,))
-    results = tuple(tuple(result.values()) for result in mycursor.fetchall())
-    queries['results_query']=querymaker(query,(exam_id,))
-    query="SELECT DISTINCT courses.Course_Name, courses.Credits FROM courses INNER JOIN results ON results.Course_ID=courses.Course_ID WHERE results.Exam_ID=%s;"
-    mycursor.execute(query,(exam_id,))  
-    course=(tuple(tuple(course.values()) for course in mycursor.fetchall()))[0]
-    queries['course_query']=querymaker(query,(exam_id,))
-    return render_template('view_result_admin.html', results=results, exam_id=exam_id,course=course,queries=queries)
-
-@app.route('/admin/results/')
-def adminResults():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    queries={}
-    query = "SELECT exams.Exam_ID, exams.Course_ID, exams.Exam_Date, exams.Exam_Duration, exams.Exam_Type, exams.Venue, exams.Status,courses.Course_Name,courses.Credits FROM exams INNER JOIN courses ON exams.Course_ID=courses.Course_ID WHERE exams.Exam_Date<CURRENT_DATE AND exams.Status!='Locked';"
-    mycursor.execute(query)
-    Unevaluated_Result = tuple(tuple(result.values()) for result in mycursor.fetchall())
-    queries['Unevaluated_Result']=querymaker(query,None)
-    query = "SELECT exams.Exam_ID, exams.Course_ID, exams.Exam_Date, exams.Exam_Duration, exams.Exam_Type, exams.Venue, exams.Status,courses.Course_Name,courses.Credits FROM exams INNER JOIN courses ON exams.Course_ID=courses.Course_ID WHERE exams.Exam_Date<CURRENT_DATE AND exams.Status='Locked';"
-    mycursor.execute(query)
-    Evautated_Result = tuple(tuple(result.values()) for result in mycursor.fetchall())
-    queries['Evautated_Result']=querymaker(query,None)
-    query=request.args.get('query',None)
-    if query:
-        queries=None
-    return render_template('manage_results.html', Evautated_Result=Evautated_Result, Unevaluated_Result=Unevaluated_Result,query=query,queries=queries,message_success=request.args.get('message_success',None),message_danger=request.args.get('message_danger',None)) 
-
-@app.route('/admin/<int:admin_id>/delete')
-def delete_admin(admin_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query="DELETE FROM admin WHERE Admin_ID=%s"
-    mycursor.execute(query, (admin_id,))
-    mydb.commit()
-    return redirect(url_for('view_admin',admin_id=session['user'][0],query=querymaker(query,(admin_id,)),message_danger="Admin Deleted Successfully"))
-@app.route('/admin/<int:admin_id>/update', methods=['POST'])
-def update_admin(admin_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    errors={}
-    new_name = request.form.get('admin_name')
-    if not new_name:
-        errors['name_error'] = "Name cannot be empty"
-    elif len(new_name) < 3:
-        errors['name_error'] = "Name should be at least 3 characters"
-    
-    new_email = request.form.get('admin_email')
-    if not new_email:
-        errors['email_error'] = "Email cannot be empty"
-    elif not re.match(r'^[a-zA-Z0-9._%+-]+@thapar.edu$', new_email):
-        errors['email_error'] = "Invalid email format"
-    new_password = request.form.get('admin_password')
-    if not new_password:
-        errors['password_error'] = "Password cannot be empty"
-    elif len(new_password) < 8:
-        errors['password_error'] = "Password should be at least 8 characters"
-    if errors:
-        return redirect(url_for('view_admin', admin_id=admin_id, errors=errors,admin_name=new_name,admin_email=new_email,admin_password=new_password))
-    query ="""
-    UPDATE admin
-    SET User_Name=%s, Email=%s, Password=%s
-    WHERE Admin_ID=%s
-    """ 
-    values = (new_name, new_email, new_password, admin_id)
-    mycursor.execute(query, values)
-    mydb.commit()
-    session['user'] = (admin_id, new_name, new_email, new_password)
-    return redirect(url_for('view_admin', admin_id=admin_id, message_success="Admin Updated Successfully",query=querymaker(query,values)))
-
-
-@app.route('/admin/<int:admin_id>/add', methods=['POST'])
-def add_admin(admin_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    errors = {}
-    new_admin_name = request.form.get('adminName')
-    if not new_admin_name:
-        errors['new_name_error'] = "Name cannot be empty"
-    elif len(new_admin_name) < 3:
-        errors['new_name_error'] = "Name should be at least 3 characters"
-    
-    new_admin_email = request.form.get('adminEmail')
-    if not new_admin_email:
-        errors['new_email_error'] = "Email cannot be empty"
-    elif not re.match(r'^[a-zA-Z0-9._%+-]+@thapar.edu$', new_admin_email):
-        errors['new_email_error'] = "Invalid email format"
-    
-    new_admin_password = request.form.get('adminPassword')
-    if not new_admin_password:
-        errors['new_password_error'] = "Password cannot be empty"
-    elif len(new_admin_password) < 8:
-        errors['new_password_error'] = "Password should be at least 8 characters"
-    
-    if errors:
-        return redirect(url_for('view_admin', admin_id=admin_id, errors=errors, admin_name=new_admin_name, admin_email=new_admin_email, admin_password=new_admin_password))
-    
-    query = """
-    INSERT INTO admin (User_Name, Email, Password)
-    VALUES (%s, %s, %s)
-    """
-    values = (new_admin_name, new_admin_email, new_admin_password)
-    mycursor.execute(query, values)
-    mydb.commit()
-    
-    return redirect(url_for('view_admin', admin_id=admin_id, message_success="Admin Added Successfully", query=querymaker(query, values)))
-
-@app.route('/admin/<int:admin_id>')
-def view_admin(admin_id):
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query="SELECT * FROM admin WHERE Admin_ID=%s"
-    mycursor.execute(query,(admin_id,))
-    admin=tuple((mycursor.fetchone()).values())
-    errors=ast.literal_eval(request.args.get('errors', '{}'))
-    if errors:
-        query=None
-    all_admins = "SELECT `Admin_ID`, `User_Name`, `Email` FROM admin where admin_id not in (%s)"
-    mycursor.execute(all_admins,(admin_id,))
-    admins=tuple(tuple(admin.values()) for admin in mycursor.fetchall())
-    display_query=request.args.get('query',None)
-    if  display_query:
-        query=querymaker(query,(admin_id,))
-    else:
-        query=display_query
-    return render_template('admin_view.html',admin=admin,admins=admins,errors=errors,message_success=request.args.get('message_success',None),message_danger=request.args.get('message_danger',None),query=query,admin_name=request.args.get('admin_name',None),admin_email=request.args.get('admin_email',None),admin_password=request.args.get('admin_password',None))
-
-@app.route('/admin/create_tables')
-def create_tables():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    setup.create_tables()
-    return redirect(url_for('admin', message_success="Tables Created Successfully"))
-
-@app.route('/admin/insert_initial_data')
-def insert_initial_data():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    def run_with_timeout(func, timeout):
-        thread = threading.Thread(target=func)
-        thread.start()
-        thread.join(timeout)
-        if thread.is_alive():
-            raise TimeoutError("Function call timed out")
-    try:
-        run_with_timeout(setup.insert_initial_data, 10)  # 10 seconds timeout
-    except TimeoutError:
-        return redirect(url_for('admin', message_danger="Initial Data Insertion Timed Out"))
-    return redirect(url_for('admin', message_success="Initial Data Inserted Successfully"))
-@app.route('/admin')
-def admin():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    if session['user'][0]!=1:
-        return redirect(url_for('main'))
-    query = "SELECT * FROM admin WHERE Admin_ID=%s"
-    mycursor.execute(query, (session['user'][0],))
-    admin = tuple((mycursor.fetchone()).values())
-    return render_template('AdminDashboard.html',message_success=request.args.get('message_success',None),message_danger=request.args.get('message_danger',None))
-
-
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect(url_for('main'))    
-
-@app.route('/login_user', methods=['POST'])
-def signin():
-    if request.method == 'POST':
-        errors={}
-        email = request.form.get('email').lower().strip()
-        if not email:
-            errors['email_error'] = "Email cannot be empty"
-        elif not re.match(r'^[a-zA-Z0-9._%+-]+@thapar.edu$', email):
-            errors['email_error'] = "Invalid email format"
-        password = request.form.get('password').strip()
-        if not password:
-            errors['password_error'] = "Password cannot be empty"
-        elif len(password) < 8:
-            errors['password_error'] = "Password should be at least 8 characters"
-        userType = request.form.get('user-type')
-        if not userType:
-            errors['user_type_error'] = "please select a user type"
-        if errors:
-            return render_template('SignIn.html', **errors, email=email,  userType=userType)
-        if userType == 'student':
-            mycursor.execute("SELECT * FROM students WHERE College_Email=%s AND Password=%s", (email, password))
-            user = mycursor.fetchone()
-            if user:
-                user = tuple(user.values())
-                session['user'] = user
-                return redirect(url_for('student'))
-        elif userType == 'faculty':
-            mycursor.execute("SELECT * FROM faculty WHERE official_mail=%s AND Password=%s", (email, password))
-            user = mycursor.fetchone()
-            if user:
-                user = tuple(user.values())
-                print(user)
-                print("\n"*9)
-                session['user'] = user
-                return redirect(url_for('faculty'))
-        elif userType == 'admin':
-            mycursor.execute("SELECT * FROM admin WHERE Email=%s AND Password=%s", (email, password))
-            user=mycursor.fetchone()
-            if user:
-                user = tuple(user.values())
-                session['user'] = user
-                return redirect(url_for('admin'))
-        
-        return render_template('SignIn.html', credentials_error="Invalid credentials", email=email, userType=userType)
-    return render_template('SignIn.html')
-
-
-
-
-
-
-@app.route('/signin')
-def login():
-    try:
-        
-        courses={"courses":getFacultyCourses()}
-        departments={"departments":getFacultyDepartments()}
-    except:
-        courses={"courses":[]}
-        departments={"departments":[]}
-    return render_template('SignIn.html',**courses,**departments)
-
-
-
-
-@app.route('/aboutme')
-def aboutme():
-    return render_template('aboutme.html')
-
-
-@app.route('/documentations')
-def documentations():
-    documentation_files = []
-    # Ensure the directory exists before trying to list its contents
-    files_dir = os.path.join(app.static_folder, 'files')
-    if os.path.exists(files_dir):
-        for file in os.listdir(files_dir):
-            file_path = os.path.join(files_dir, file)
-            if os.path.isfile(file_path):
-                # Get the file extension (without the dot)
-                extension = os.path.splitext(file)[1][1:].lower() if os.path.splitext(file)[1] else 'N/A'
-                # Append as tuple (extension, filename) - assuming filename is sufficient for linking
-                # If you need the full path for linking, you might use url_for('static', filename='files/' + file)
-                documentation_files.append((extension, file))
-
-    # Render the template with the list of tuples
-    return render_template('documentations.html', documentation_files=documentation_files)
-@app.route('/admin/logs')
-def admin_logs():
-    if 'user' not in session:
-        return redirect(url_for('login'))
-    query = "SELECT * FROM audit_log"
-    mycursor.execute(query)
-    logs = tuple(tuple(log.values()) for log in mycursor.fetchall())[::-1]
-    display_query = request.args.get('query', querymaker(query, None))
-    return render_template('logs.html', logs=logs, query=display_query)
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)

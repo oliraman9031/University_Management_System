@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Event Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        main { padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; }
+        th { background: #333; color: #fff; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 10px; }
+        .success { background: #d4edda; color: #155724; padding: 10px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/">UMS</a></li>
+            <li><a href="/admin" >Dashboard</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/courses">Courses</a></li>
+            <li><a href="/admin/exams">Exams</a></li>
+            <li><a href="/admin/fees">Fees</a></li>
+            <li><a href="/admin/departments">Departments</a></li>
+            <li><a href="/admin/faculty">Faculty</a></li>
+            <li><a href="/admin/events" class="active">Events</a></li>
+            <li><a href="/admin/results">Results</a></li>
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </nav>
+    <main>
+        {% if message_success %}
+        <div class="success">{{ message_success }}</div>
+        {% endif %}
+        {% if message_danger %}
+        <div class="error">{{ message_danger }}</div>
+        {% endif %}
+
+        <h1>Manage Events</h1>
+
+        <h2>Add Event</h2>
+        <form action="/admin/events" method="POST">
+            <label>Event Name:</label><br><input type="text" name="name" required><br>
+            <label>Type:</label><br><input type="text" name="type" required><br>
+            <label>Date:</label><br><input type="date" name="date" required><br>
+            <label>Venue:</label><br><input type="text" name="venue" required><br>
+            <label>Organized By:</label><br><input type="text" name="organized_by" required><br>
+            <label>Status:</label><br>
+            <select name="status" required>
+                <option value="Upcoming">Upcoming</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+            </select><br><br>
+            <label>Description:</label><br><textarea name="description" rows="3"></textarea><br>
+            <button type="submit">Create Event</button>
+        </form>
+
+        <h2>Events</h2>
+        {% if events %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Venue</th>
+                    <th>Organized By</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td>{{ event.Event_ID }}</td>
+                    <td>{{ event.Event_Name }}</td>
+                    <td>{{ event.Event_Type }}</td>
+                    <td>{{ event.Event_Date }}</td>
+                    <td>{{ event.Venue }}</td>
+                    <td>{{ event.Organized_By }}</td>
+                    <td>{{ event.Status }}</td>
+                    <td><a href="/admin/events/delete/{{ event.Event_ID }}" onclick="return confirm('Delete event?')">Delete</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No events found.</p>
+        {% endif %}
+    </main>
+</body>
+</html>
