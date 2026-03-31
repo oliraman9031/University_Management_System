@@ -6,32 +6,81 @@
     <title>Admin Event Management</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
     <style>
-        body { font-family: Arial, sans-serif; }
-        main { padding: 20px; }
+        body { font-family: Arial, sans-serif; background-color: #f5f7fa; margin: 0; padding: 0; }
+        main { padding: 20px; max-width: 1200px; margin: 20px auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         th { background: #333; color: #fff; }
-        .error { background: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 10px; }
-        .success { background: #d4edda; color: #155724; padding: 10px; margin-bottom: 10px; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+        .btn-submit { background-color: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-danger { background-color: #dc3545; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; display: inline-block; }
+        form { margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+        form input, form select, form textarea { width: 100%; padding: 8px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 4px; }
+        form button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        h2 { margin-top: 30px; border-left: 4px solid #007bff; padding-left: 15px; }
+        nav {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+            transform: translateY(-2px);
+        }
+
+        nav ul li a.active {
+            background-color: #3498db;
+        }
     </style>
 </head>
 <body>
     <nav>
         <ul>
             <li><a href="/">UMS</a></li>
-            <li><a href="/admin" >Dashboard</a></li>
+            <li><a href="/admin">Dashboard</a></li>
             <li><a href="/admin/students">Students</a></li>
             <li><a href="/admin/courses">Courses</a></li>
             <li><a href="/admin/exams">Exams</a></li>
             <li><a href="/admin/fees">Fees</a></li>
             <li><a href="/admin/departments">Departments</a></li>
             <li><a href="/admin/faculty">Faculty</a></li>
-            <li><a href="/admin/events" class="active">Events</a></li>
+            <li><a href="/admin/manage_events" class="active">Events</a></li>
             <li><a href="/admin/results">Results</a></li>
             <li><a href="/logout">Logout</a></li>
         </ul>
     </nav>
+    
     <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ 'success' if category == 'success' else 'error' }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
         {% if message_success %}
         <div class="success">{{ message_success }}</div>
         {% endif %}
@@ -41,26 +90,39 @@
 
         <h1>Manage Events</h1>
 
-        <h2>Add Event</h2>
-        <form action="/admin/events" method="POST">
-            <label>Event Name:</label><br><input type="text" name="name" required><br>
-            <label>Type:</label><br><input type="text" name="type" required><br>
-            <label>Date:</label><br><input type="date" name="date" required><br>
-            <label>Venue:</label><br><input type="text" name="venue" required><br>
-            <label>Organized By:</label><br><input type="text" name="organized_by" required><br>
+        <form action="/admin/manage_events" method="POST">
+            <h3>Create New Event</h3>
+            <label>Event Name:</label><br>
+            <input type="text" name="name" required><br>
+            
+            <label>Type:</label><br>
+            <input type="text" name="type" required><br>
+            
+            <label>Date:</label><br>
+            <input type="date" name="date" required><br>
+            
+            <label>Venue:</label><br>
+            <input type="text" name="venue" required><br>
+            
+            <label>Organized By:</label><br>
+            <input type="text" name="organized_by" required><br>
+            
             <label>Status:</label><br>
             <select name="status" required>
                 <option value="Upcoming">Upcoming</option>
                 <option value="Ongoing">Ongoing</option>
                 <option value="Completed">Completed</option>
                 <option value="Cancelled">Cancelled</option>
-            </select><br><br>
-            <label>Description:</label><br><textarea name="description" rows="3"></textarea><br>
+            </select><br>
+            
+            <label>Description:</label><br>
+            <textarea name="description" rows="3"></textarea><br>
+            
             <button type="submit">Create Event</button>
         </form>
 
-        <h2>Events</h2>
-        {% if events %}
+        {% if upcoming_events %}
+        <h2>Upcoming Events</h2>
         <table>
             <thead>
                 <tr>
@@ -69,27 +131,71 @@
                     <th>Type</th>
                     <th>Date</th>
                     <th>Venue</th>
-                    <th>Organized By</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for event in events %}
+                {% for event in upcoming_events %}
+                <form action="/admin/events/update/{{event[0]}}" method="POST">
+                    <tr>
+                        <td>{{event[0]}}</td>
+                        <td><input type="text" name="event_name_{{event[0]}}" value="{{event[1]}}"></td>
+                        <td><input type="text" name="event_type_{{event[0]}}" value="{{event[2]}}"></td>
+                        <td><input type="date" name="event_date_{{event[0]}}" value="{{event[3]}}"></td>
+                        <td><input type="text" name="venue_{{event[0]}}" value="{{event[4]}}"></td>
+                        <td>
+                            <select name="status_{{event[0]}}">
+                                <option value="Upcoming" {% if event[5]=="Upcoming" %}selected{% endif %}>Upcoming</option>
+                                <option value="Ongoing" {% if event[5]=="Ongoing" %}selected{% endif %}>Ongoing</option>
+                                <option value="Completed" {% if event[5]=="Completed" %}selected{% endif %}>Completed</option>
+                                <option value="Cancelled" {% if event[5]=="Cancelled" %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="submit" class="btn-submit">Update</button>
+                            <a href="/admin/events/delete/{{event[0]}}" class="btn-danger" onclick="return confirm('Delete this event?')">Delete</a>
+                        </td>
+                    </tr>
+                </form>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        {% if past_events %}
+        <h2>Past Events</h2>
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ event.Event_ID }}</td>
-                    <td>{{ event.Event_Name }}</td>
-                    <td>{{ event.Event_Type }}</td>
-                    <td>{{ event.Event_Date }}</td>
-                    <td>{{ event.Venue }}</td>
-                    <td>{{ event.Organized_By }}</td>
-                    <td>{{ event.Status }}</td>
-                    <td><a href="/admin/events/delete/{{ event.Event_ID }}" onclick="return confirm('Delete event?')">Delete</a></td>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Venue</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in past_events %}
+                <tr>
+                    <td>{{event[0]}}</td>
+                    <td>{{event[1]}}</td>
+                    <td>{{event[2]}}</td>
+                    <td>{{event[3]}}</td>
+                    <td>{{event[4]}}</td>
+                    <td>{{event[5]}}</td>
+                    <td>
+                        <a href="/admin/events/delete/{{event[0]}}" class="btn-danger" onclick="return confirm('Delete this event?')">Delete</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
+        {% endif %}
+        
+        {% if not upcoming_events and not past_events %}
         <p>No events found.</p>
         {% endif %}
     </main>

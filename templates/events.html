@@ -1,191 +1,470 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ (session.user[1].upper()) }} | Events Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main_style.css') }}">
-</head>
+    <title>University Events - UMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        nav {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+            transform: translateY(-2px);
+        }
+
+        nav ul li a.active {
+            background-color: #3498db;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .event-header {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .event-header h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-upcoming {
+            background-color: #28a745;
+        }
+
+        .status-ongoing {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .status-completed {
+            background-color: #6c757d;
+        }
+
+        .event-body {
+            padding: 1.5rem;
+        }
+
+        .event-info {
+            margin-bottom: 1rem;
+        }
+
+        .event-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            color: #555;
+        }
+
+        .event-info-item i {
+            width: 24px;
+            margin-right: 10px;
+            font-style: normal;
+            font-weight: bold;
+        }
+
+        .event-description {
+            margin: 1rem 0;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .event-footer {
+            padding: 1rem 1.5rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        .btn-registered {
+            background-color: #28a745;
+            color: white;
+            cursor: default;
+        }
+
+        .btn-disabled {
+            background-color: #6c757d;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .no-events {
+            text-align: center;
+            padding: 4rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .no-events p {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+        }
+
+        .no-events .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            background: #ecf0f1;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
 <body>
+
     <nav>
         <ul>
             <li><a href="/">UMS</a></li>
-            <li><a href="/admin">Dashboard</a></li>
-            <li><a href="/admin/students">Students</a></li>
-            <li><a href="/admin/courses">Courses</a></li>
-            <li><a href="/admin/exams">Exams</a></li>
-            <li><a href="/admin/events" class="active">Events</a></li>
-            <li><a href="/admin/fees">Fees</a></li>
-            <li><a href="/admin/faculty">Faculty</a></li>
-            <li><a href="/admin/departments">Departments</a></li>
-            <li><a href="/admin/results">Results</a></li>
-            <li><a href="/admin/logs">Logs</a></li>
+            <li><a href="/student">Dashboard</a></li>
+            <li><a href="/events" class="active">Events</a></li>
+            <li><a href="/my_events">My Events</a></li>
+            {% if session.user and session.user[0] == 1 %}
+            <li><a href="/admin/manage_events">Admin Panel</a></li>
+            {% endif %}
             <li><a href="/logout">Logout</a></li>
         </ul>
     </nav>
 
     <main>
+        <div class="page-header">
+            <h1>🎉 University Events</h1>
+            <p>Discover and participate in exciting events happening on campus</p>
+        </div>
 
-        {% if query %}
-        <h1 class="query">{{ query }}</h1>
-        {% endif %}
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        {% if message_success %}
-        <h1 class="success">{{ message_success }}</h1>
-        {% endif %}
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterEvents('all')">All Events</button>
+                <button class="filter-btn" onclick="filterEvents('upcoming')">Upcoming</button>
+                <button class="filter-btn" onclick="filterEvents('ongoing')">Ongoing</button>
+            </div>
+        </div>
 
-        {% if message_danger %}
-        <h1 class="error">{{ message_danger }}</h1>
-        {% endif %}
-
-        {% if errors %}
-        {% for error in errors %}
-        <h1 class="error">{{ errors[error] }}</h1>
-        {% endfor %}
-        {% endif %}
-
-        <!-- ================= UPCOMING EVENTS ================= -->
-        {% if upcoming_events %}
-        <h1>Upcoming Events</h1>
-        <table>
-            <tr>
-                <th>Event ID</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Venue</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-
-            {% for event in upcoming_events %}
-            <form action="/admin/events/update/{{event[0]}}" method="POST">
-                <tr>
-                    <td>
-                        <input type="text" name="event_id_{{event[0]}}" value="{{event[0]}}" readonly>
-                    </td>
-
-                    <td>
-                        <input type="text" name="event_name_{{event[0]}}" value="{{event[1]}}">
-                    </td>
-
-                    <td>
-                        <input type="text" name="event_type_{{event[0]}}" value="{{event[2]}}">
-                    </td>
-
-                    <td>
-                        <input type="date" name="event_date_{{event[0]}}" value="{{event[3]}}">
-                    </td>
-
-                    <td>
-                        <input type="text" name="venue_{{event[0]}}" value="{{event[4]}}">
-                    </td>
-
-                    <td>
-                        <select name="status_{{event[0]}}">
-                            <option value="Upcoming" {% if event[5]=="Upcoming" %}selected{% endif %}>Upcoming</option>
-                            <option value="Ongoing" {% if event[5]=="Ongoing" %}selected{% endif %}>Ongoing</option>
-                            <option value="Completed" {% if event[5]=="Completed" %}selected{% endif %}>Completed</option>
-                        </select>
-                    </td>
-
-                    <td>
-                        <button type="submit" class="btn-submit">Update</button>
-                        <a href="/admin/events/delete/{{event[0]}}" class="btn-danger">Delete</a>
-                    </td>
-                </tr>
-            </form>
-            {% endfor %}
-        </table>
-        {% endif %}
-
-
-        <!-- ================= PAST EVENTS ================= -->
-        {% if past_events %}
-        <h1>Past Events</h1>
-        <table>
-            <tr>
-                <th>Event ID</th>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Venue</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-
-            {% for event in past_events %}
-            <tr>
-                <td>{{ event[0] }}</td>
-                <td>{{ event[1] }}</td>
-                <td>{{ event[2] }}</td>
-                <td>{{ event[3] }}</td>
-                <td>{{ event[4] }}</td>
-                <td>{{ event[5] }}</td>
-                <td>
-                    <a href="/admin/events/delete/{{event[0]}}" class="btn-danger">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </table>
-        {% endif %}
-
-
-        <!-- ================= ADD EVENT ================= -->
-        <h1>Add New Event</h1>
-        <form action="/admin/events/add" method="POST">
-            <table>
-                <tr>
-                    <th>Name</th>
-                    <td><input type="text" name="event_name" required></td>
-                </tr>
-
-                <tr>
-                    <th>Type</th>
-                    <td><input type="text" name="event_type" required></td>
-                </tr>
-
-                <tr>
-                    <th>Date</th>
-                    <td><input type="date" name="event_date" required></td>
-                </tr>
-
-                <tr>
-                    <th>Venue</th>
-                    <td><input type="text" name="venue" required></td>
-                </tr>
-
-                <tr>
-                    <th>Status</th>
-                    <td>
-                        <select name="status">
-                            <option value="Upcoming">Upcoming</option>
-                            <option value="Ongoing">Ongoing</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td colspan="2">
-                        <button type="submit">Add Event</button>
-                    </td>
-                </tr>
-            </table>
-        </form>
-
-        {% if not upcoming_events and not past_events %}
-        <h1>No Events Found</h1>
-        {% endif %}
-
+        <!-- Events Grid -->
+        <div class="events-grid" id="eventsGrid">
+            {% if events %}
+                {% for event in events %}
+                <div class="event-card" data-status="{{ event.Status.lower() }}">
+                    <div class="event-header">
+                        <h3>{{ event.Event_Name }}</h3>
+                        <span class="event-status status-{{ event.Status.lower() }}">
+                            {{ event.Status }}
+                        </span>
+                    </div>
+                    <div class="event-body">
+                        <div class="event-info">
+                            <div class="event-info-item">
+                                <i>📅</i>
+                                <span>{{ event.Event_Date.strftime('%B %d, %Y') if event.Event_Date is not string else event.Event_Date }}</span>
+                            </div>
+                            <div class="event-info-item">
+                                <i>📍</i>
+                                <span>{{ event.Venue }}</span>
+                            </div>
+                            <div class="event-info-item">
+                                <i>👥</i>
+                                <span>Organized by: {{ event.Organized_By }}</span>
+                            </div>
+                            <div class="event-info-item">
+                                <i>🏷️</i>
+                                <span>{{ event.Event_Type }}</span>
+                            </div>
+                        </div>
+                        {% if event.Description %}
+                        <div class="event-description">
+                            {{ event.Description }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="event-footer">
+                        <span class="event-date">
+                            {% if event.Status == 'Upcoming' %}
+                                {% set days_left = (event.Event_Date - now).days if now is defined else 0 %}
+                                {% if days_left > 0 %}
+                                    {{ days_left }} days left
+                                {% elif days_left == 0 %}
+                                    Today!
+                                {% endif %}
+                            {% endif %}
+                        </span>
+                        
+                        {% if session.user %}
+                            {% if event.Status == 'Completed' or event.Status == 'Cancelled' %}
+                                <button class="btn btn-disabled" disabled>
+                                    {% if event.Status == 'Completed' %}Event Ended{% else %}Cancelled{% endif %}
+                                </button>
+                            {% else %}
+                                <a href="/events/register/{{ event.Event_ID }}" 
+                                   class="btn btn-primary"
+                                   onclick="return confirm('Register for {{ event.Event_Name }}?')">
+                                    Register Now
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="/signin" class="btn btn-secondary">Login to Register</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-events">
+                    <div class="icon">🎪</div>
+                    <p>No upcoming events at the moment.</p>
+                    <p>Check back later for exciting events!</p>
+                </div>
+            {% endif %}
+        </div>
     </main>
 
-    <footer style="text-align:center; padding:10px;">
-        <p>© 2026 University Management System</p>
-        <p>Developed and Designed by Raman Oli</p>
-    </footer>
-
+    <script>
+        function filterEvents(status) {
+            const events = document.querySelectorAll('.event-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            // Update active button
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase().includes(status)) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Filter events
+            events.forEach(event => {
+                if (status === 'all') {
+                    event.style.display = 'block';
+                } else {
+                    const eventStatus = event.getAttribute('data-status');
+                    if (eventStatus === status) {
+                        event.style.display = 'block';
+                    } else {
+                        event.style.display = 'none';
+                    }
+                }
+            });
+        }
+        
+        // Add current date to template context
+        document.addEventListener('DOMContentLoaded', function() {
+            // You can add any JavaScript initialization here
+            console.log('Events page loaded');
+        });
+    </script>
 </body>
 </html>

@@ -353,12 +353,12 @@ def create_tables():
         # Execute table creation
         for table_name, sql in tables_sql:
             print(f"Creating table '{table_name}'...")
-        try:
-            cursor.execute(sql)
-            print(f"✅ {table_name} created")
-        except pymysql.Error as e:
-            print(f"❌ Error creating {table_name}: {e}")
-            print(f"Table '{table_name}' created or already exists.")
+            try:
+                cursor.execute(sql)
+                print(f"✅ {table_name} created")
+            except pymysql.Error as e:
+                print(f"❌ Error creating {table_name}: {e}")
+                print(f"Table '{table_name}' created or already exists.")
 
         # Add the foreign key constraint for department.Head_of_Department
         # This must be done after both 'department' and 'faculty' tables exist
