@@ -1461,22 +1461,22 @@ def adminStudents():
     if 'user' not in session:
         return redirect(url_for('login'))
     queries={}
-    query = "SELECT Student_ID,CONCAT(First_Name, ' ', Middle_Name, ' ', Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Pending';"
+    query = "SELECT Student_ID,CONCAT_WS(' ', First_Name, Middle_Name, Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Pending';"
     mycursor.execute(query)
     pending_students = tuple(tuple(student.values()) for student in mycursor.fetchall())
     queries['pending_students']=querymaker(query,None)
-    query = "SELECT Student_ID,CONCAT(First_Name, ' ', Middle_Name, ' ', Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Enrolled';"
+    query = "SELECT Student_ID,CONCAT_WS(' ', First_Name, Middle_Name, Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Enrolled';"
     mycursor.execute(query)
     enrolled_students = tuple(tuple(student.values()) for student in mycursor.fetchall())
     queries['enrolled_students']=querymaker(query,None)
     
-    query = "SELECT Student_ID,CONCAT(First_Name, ' ', Middle_Name, ' ', Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Graduated';"
+    query = "SELECT Student_ID,CONCAT_WS(' ', First_Name, Middle_Name, Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Graduated';"
     mycursor.execute(query)
     graduted_students = tuple(tuple(student.values()) for student in mycursor.fetchall())
     queries['graduted_students']=querymaker(query,None)
 
 
-    query = "SELECT Student_ID,CONCAT(First_Name, ' ', Middle_Name, ' ', Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Restricted';"
+    query = "SELECT Student_ID,CONCAT_WS(' ', First_Name, Middle_Name, Last_Name) AS Name, CONCAT(street, ', ', District, ', ', State, ', ', Country) AS Address, Gender, TIMESTAMPDIFF(YEAR, Date_of_Birth, CURRENT_DATE) AS Age, Email, Enrollment_Year, Graduation_Year FROM students WHERE Status='Restricted';"
     mycursor.execute(query)
     restricated_students = tuple(tuple(student.values()) for student in mycursor.fetchall())
     queries['restricated_students']=querymaker(query,None)

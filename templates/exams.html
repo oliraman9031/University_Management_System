@@ -1,431 +1,541 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ (session.user[1] + ' ' + session.user[2] + ' ' + session.user[3]).upper() }} | Faculty Dashboard</title>
+    <title>Faculty Exam Management | UMS</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nav_style.css') }}">
     <style>
-        /* Existing styles */
+        /* Modern CSS with support for unlimited exams */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+        }
+
         nav {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 0;
-            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         nav ul {
             list-style: none;
-            padding: 0;
-            margin: 0;
             display: flex;
-            justify-content: center;
-        }
-
-        nav ul li {
-            margin: 0 15px;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
         nav ul li a {
-            color: #fff;
+            color: white;
             text-decoration: none;
-            padding: 10px 15px;
-            transition: background-color 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: background 0.3s;
         }
 
-        nav ul li a:hover,
-        nav ul li a.active {
-            background-color: #555;
-            border-radius: 5px;
+        nav ul li a:hover, nav ul li a.active {
+            background: rgba(255,255,255,0.2);
         }
 
         main {
-            padding: 20px;
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+        }
+
+        /* Section styling */
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .badge {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        /* Search and filter bar */
+        .search-bar {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        /* Table wrapper with scroll for many exams */
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 1em;
+            min-width: 800px;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            z-index: 10;
+        }
+
+        th {
+            padding: 1rem;
             text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e0e0e0;
         }
 
-        table thead tr {
-            background-color: #333;
-            color: #fff;
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f0f0;
         }
 
-        table th,
-        table td {
-            padding: 12px 15px;
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Form styling */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .form-group input, .form-group select {
+            padding: 0.5rem;
             border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.875rem;
         }
 
-        table tbody tr:nth-child(even) {
-            background-color: #f2f2f2;
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
         }
 
-        table tbody tr:hover {
-            background-color: #f1f1f1;
+        button:hover {
+            background: #5a67d8;
+        }
+
+        .btn-update {
+            background: #48bb78;
+        }
+
+        .btn-update:hover {
+            background: #38a169;
+        }
+
+        .btn-delete {
+            background: #f56565;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-delete:hover {
+            background: #e53e3e;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Alert messages */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #38a169;
+        }
+
+        .alert-danger {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .alert-info {
+            background: #bee3f8;
+            color: #2c5282;
+            border-left: 4px solid #3182ce;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #a0aec0;
         }
 
         footer {
-            background-color: #333;
-            color: #fff;
             text-align: center;
-            padding: 10px 0;
-            position: fixed;
-            width: 100%;
-            bottom: 0;
+            padding: 1rem;
+            background: #2c3e50;
+            color: white;
+            margin-top: 2rem;
         }
 
-        /* New styles for the form */
-        form {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-
-        form div {
-            margin-bottom: 15px;
-        }
-
-        form label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        form input,
-        form select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-
-        form button {
-            padding: 10px 15px;
-            background-color: #333;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        form button:hover {
-            background-color: #555;
-        }
-
-        td input,
-        select {
-            width: 100%;
-            padding: 8px;
-            border: 0px;
-            box-sizing: border-box;
-        }
-
-        td a {
-            padding: 0px 10px;
-            color: red;
-            text-decoration: none;
-        }
-
-        td button {
-            color: blue;
-            padding: 0px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .error {
-            background-color: #f8d7da;
-            color: #da2638;
-            padding: 5px;
-            margin: 20px 0;
-            border-left: 5px solid #f80019;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            padding: 15px;
-            margin: 20px 0;
-            border-left: 5px solid #28a745;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .no_enrollment_error {
-            background-color: #fff2f2;
-            color: #d32f2f;
-            text-align: center;
-            margin: 40px auto;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 6px solid #d32f2f;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            font-size: 1.2em;
-            max-width: 800px;
-        }
-
-        .query {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 15px;
-            margin: 20px 0;
-            border-left: 5px solid #ffc107;
-            border-radius: 5px;
-            font-size: 16px;
-            text-align: left;
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            main {
+                padding: 0 1rem;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
-
 <body>
     <nav>
         <ul>
             <li><a href="/">UMS</a></li>
-            <li><a href="/faculty/dashboard">Dashboard</a></li>
-            <li><a href="/faculty/exams" class="active">Exams</a></li>
-            <li><a href="/faculty/students">Students</a></li>
-            <li><a href="/faculty/results">Results</a></li>
+            <li><a href="/admin/dashboard">Dashboard</a></li>
+            <li><a href="/admin/exams" class="active">Exams</a></li>
+            <li><a href="/admin/students">Students</a></li>
+            <li><a href="/admin/results">Results</a></li>
             <li><a href="/logout">Logout</a></li>
         </ul>
     </nav>
+
     <main>
-        {% if queries %}
-        {% for query in queries %}
-
-        <h1 class="query">{{ queries[query] }}</h1>
-        {% endfor %}
-        {% endif %}
-
-        {% if query %}
-        <h1 class="query">{{query}}</h1>
-        {%endif%}
-        {% if message_danger%}
-        <p class="error">{{message_danger}}</p>
-        {%endif%}
-        {% if message_success%}
-        <p class="success">{{message_success}}</p>
-        {%endif%}
-        {% if errors_update %}
-        {% for error in errors_update %}
-        <p class="error">{{errors_update[error]}}</p>
-        {%endfor%}
-        {%endif%}
-        {% if upcoming_exams %}
-        <h1>Upcoming Exams</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Course ID</th>
-                    <th>Exam Date</th>
-                    <th>Exam Duration (hr.)</th>
-                    <th>Exam Type</th>
-                    <th>Venue</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for exam in upcoming_exams %}
-                <form action="/faculty/exams/update/{{ exam[0] }}" method="post">
-                    <tr>
-                        <td><input type="text" name="course_id_{{ exam[0] }}" id="course_id_{{ exam[0] }}"
-                                value="{{ exam[1] }}" readonly></td>
-                        <td><input type="date" name="exam_date_{{ exam[0] }}" id="exam_date_{{ exam[0] }}"
-                                value="{{ exam[2] }}"></td>
-                        <td><input type="number" step='0.1' name="exam_duration_{{ exam[0] }}"
-                                id="exam_duration_{{ exam[0] }}" value="{{ exam[3] }}"> </td>
-                        <td>
-                            <select name="exam_type_{{ exam[0] }}" id="exam_type_{{ exam[0] }}">
-                                <option value="" {% if exam[4]=='' %}selected disabled{% endif %}>Select</option>
-                                <option value="Mid Semester Test" {% if exam[4]=='Mid Semester Test' %}selected disabled
-                                    {%endif %}>Mid Semester Test</option>
-                                <option value="End Semester Test" {% if exam[4]=='End Semester Test' %}selected
-                                    disabled{% endif %}>End Semester Test</option>
-                                <option value="Quiz-1" {% if exam[4]=='Quiz-1' %}selected disabled{% endif %}>Quiz-1
-                                </option>
-                                <option value="Quiz-2" {% if exam[4]=='Quiz-2' %}selected disabled{% endif %}>Quiz-2
-                                </option>
-                                <option value="Lab Evaluation I" {% if exam[4]=='Lab Evaluation I' %}selected disabled{%
-                                    endif %}>Lab Evaluation I</option>
-                                <option value="Lab Evaluation II" {% if exam[4]=='Lab Evaluation II' %}selected
-                                    disabled{% endif %}>Lab Evaluation II</option>
-                                <option value="Others" {% if exam[4]=='Others' %}selected disabled{% endif %}>Others
-                                </option>
-                            </select>
-                        </td>
-                        <td><input type="text" name="exam_venue_{{ exam[0] }}" id="exam_venue{{ exam[0] }}"
-                                value="{{ exam[5] }}"></td>
-                        <td>
-                            <button type="submit">Update</button>
-                            <a href="/faculty/exams/delete/{{ exam[0] }}">Delete</a>
-                        </td>
-
-                    </tr>
-                </form>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
                 {% endfor %}
-                {% if type_error_update%}
-                <tr>
-                    <td colspan="6">{{type_error_update}}</td>
-                </tr>
-                {%endif%}
-                {% if venue_error_update%}
-                <tr>
-                    <td colspan="6">{{venue_error_update}}</td>
-                </tr>
-                {%endif%}
-                {% if date_error_update%}
-                <tr>
-                    <td colspan="6">{{date_error_update}}</td>
-                </tr>
-                {%endif%}
-                {% if duration_error_update%}
-                <tr>
-                    <td colspan="6">{{duration_error_update}}</td>
-                </tr>
-                {%endif%}
-                {% if exist_error_update%}
-                <tr>
-                    <td colspan="6">{{exist_error_update}}</td>
-                </tr>
-                {%endif%}
+            {% endif %}
+        {% endwith %}
 
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_upcoming|default(0) }}</div>
+                <div class="stat-label">Upcoming Exams</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_recent|default(0) }}</div>
+                <div class="stat-label">Completed Exams</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ (total_upcoming|default(0)) + (total_recent|default(0)) }}</div>
+                <div class="stat-label">Total Exams</div>
+            </div>
+        </div>
 
+        <!-- Upcoming Exams Section -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">📅 Upcoming Exams</h2>
+                <span class="badge">{{ total_upcoming|default(0) }} Active</span>
+            </div>
+            
+            {% if upcoming_exams %}
+            <div class="search-bar">
+                <input type="text" id="searchUpcoming" class="search-input" placeholder="🔍 Search upcoming exams...">
+            </div>
+            <div class="table-wrapper">
+                <table id="upcomingTable">
+                    <thead>
+                        <tr>
+                            <th>Exam ID</th>
+                            <th>Course ID</th>
+                            <th>Date</th>
+                            <th>Duration</th>
+                            <th>Type</th>
+                            <th>Venue</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exam in upcoming_exams %}
+                        <form action="/faculty/exams/update/{{ exam['exam_id'] }}" method="post">
+                            <tr>
+                                <td>{{ exam['exam_id'] }}</td>
+                                <td><input type="text" value="{{ exam['course_id'] }}" readonly style="border:none; background:transparent; font-weight:500;"></td>
+                                <td><input type="date" name="exam_date_{{ exam['exam_id'] }}" value="{{ exam['exam_date'] }}" class="search-input" style="width:auto;"></td>
+                                <td><input type="number" step="0.1" name="exam_duration_{{ exam['exam_id'] }}" value="{{ exam['exam_duration'] }}" style="width:80px;"></td>
+                                <td>
+                                    <select name="exam_type_{{ exam['exam_id'] }}">
+                                        <option value="Mid Semester Test" {% if exam['exam_type']=='Mid Semester Test' %}selected{% endif %}>Mid Semester</option>
+                                        <option value="End Semester Test" {% if exam['exam_type']=='End Semester Test' %}selected{% endif %}>End Semester</option>
+                                        <option value="Quiz-1" {% if exam['exam_type']=='Quiz-1' %}selected{% endif %}>Quiz-1</option>
+                                        <option value="Quiz-2" {% if exam['exam_type']=='Quiz-2' %}selected{% endif %}>Quiz-2</option>
+                                        <option value="Lab Evaluation I" {% if exam['exam_type']=='Lab Evaluation I' %}selected{% endif %}>Lab I</option>
+                                        <option value="Lab Evaluation II" {% if exam['exam_type']=='Lab Evaluation II' %}selected{% endif %}>Lab II</option>
+                                        <option value="Others" {% if exam['exam_type']=='Others' %}selected{% endif %}>Others</option>
+                                    </select>
+                                </td>
+                                <td><input type="text" name="exam_venue_{{ exam['exam_id'] }}" value="{{ exam['venue'] }}"></td>
+                                <td class="action-buttons">
+                                    <button type="submit" class="btn-update">Update</button>
+                                    <a href="/faculty/exams/delete/{{ exam['exam_id'] }}" class="btn-delete" style="padding:0.5rem 1rem; border-radius:6px;">Delete</a>
+                                </td>
+                            </tr>
+                        </form>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <p>✨ No upcoming exams scheduled</p>
+            </div>
+            {% endif %}
+        </div>
 
-
-
-            </tbody>
-        </table>
-        {% endif %}
-        {%if message %}
-        <p class="success">{{ message }}</p>
-        {% endif %}
-        {% if exist_error_update %}
-        <p class="error">{{ exist_error_update }}</p>
-        {% endif %}
+        <!-- Schedule New Exam -->
         {% if not no_enrollment %}
-        <h1>Schedule Exam</h1>
-        <form action="/faculty/exams/add" method="post">
-            <div>
-                <label for="course_id">Course ID</label>
-                <input type="text" id="course_id" name="course_id" value="{{session['user'][9]}}" readonly>
-            </div>
-            <div>
-                <label for="exam_date">Exam Date</label>
-                <input type="date" id="exam_date" name="exam_date" value="{% if exam_date %}{{ exam_date }}{% endif %}">
-                {% if date_error %}
-                <p class="error">{{ date_error }}</p>
-                {% endif %}
-            </div>
-            <div>
-                <label for="exam_duration">Exam Duration (hours)</label>
-                <input type="number" step="0.1" id="exam_duration" name="exam_duration"
-                    value="{% if exam_duration %}{{ exam_duration }}{% endif %}">
-                {% if duration_error %}
-                <p class="error">{{ duration_error }}</p>
-                {% endif %}
-            </div>
-            <div>
-                <label for="exam_charge">Exam Charge</label>
-                <input type="number" step="1" id="exam_charge" name="exam_charge"
-                    value="{% if exam_charge %}{{ exam_charge }}{% endif %}">
-                {% if charge_error %}
-                <p class="error">{{ charge_error }}</p>
-                {% endif %}
-            </div>
-            <div>
-                <label for="exam_type">Exam Type</label>
-                <select id="exam_type" name="exam_type">
-                    <option value="" selected disabled>Select</option>
-                    <option value="Mid Semester Test" {% if exam_type=='Mid Semester Test' %}selected{% endif %}>Mid
-                        Semester Test</option>
-                    <option value="End Semester Test" {% if exam_type=='End Semester Test' %}selected{% endif %}>End
-                        Semester Test</option>
-                    <option value="Quiz-1" {% if exam_type=='Quiz-1' %}selected{% endif %}>Quiz-1</option>
-                    <option value="Quiz-2" {% if exam_type=='Quiz-2' %}selected{% endif %}>Quiz-2</option>
-                    <option value="Lab Evaluation I" {% if exam_type=='Lab Evaluation I' %}selected{% endif %}>Lab
-                        Evaluation I</option>
-                    <option value="Lab Evaluation II" {% if exam_type=='Lab Evaluation II' %}selected{% endif %}>Lab
-                        Evaluation II</option>
-                    <option value="Others" {% if exam_type=='Others' %}selected{% endif %}>Others</option>
-                </select>
-                {% if type_error %}
-                <p class="error">{{ type_error }}</p>
-                {% endif %}
-                {% if exist_error %}
-                <p class="error">{{ exist_error }}</p>
-                {% endif %}
-            </div>
-            <div>
-                <label for="venue">Venue</label>
-                <input type="text" id="venue" name="venue" value="{% if venue %}{{ venue }}{% endif %}">
-                {% if venue_error %}
-                <p class="error">{{ venue_error }}</p>
-                {% endif %}
-            </div>
-            <button type="submit">Schedule</button>
-        </form>
+        <div class="section">
+            <h2 class="section-title">➕ Schedule New Exam</h2>
+            <form action="/faculty/exams/add" method="post">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Course ID</label>
+                        <input type="text" name="course_id" value="{{ session['user'][9] if session['user'] else '' }}" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Exam Date</label>
+                        <input type="date" name="exam_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration (hours)</label>
+                        <input type="number" step="0.1" name="exam_duration" placeholder="e.g., 2.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Exam Charge</label>
+                        <input type="number" step="1" name="exam_charge" placeholder="Optional">
+                    </div>
+                    <div class="form-group">
+                        <label>Exam Type</label>
+                        <select name="exam_type" required>
+                            <option value="">Select Type</option>
+                            <option value="Mid Semester Test">Mid Semester Test</option>
+                            <option value="End Semester Test">End Semester Test</option>
+                            <option value="Quiz-1">Quiz-1</option>
+                            <option value="Quiz-2">Quiz-2</option>
+                            <option value="Lab Evaluation I">Lab Evaluation I</option>
+                            <option value="Lab Evaluation II">Lab Evaluation II</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Venue</label>
+                        <input type="text" name="venue" placeholder="Room number / Hall" required>
+                    </div>
+                </div>
+                <button type="submit" style="margin-top: 1rem;">Schedule Exam</button>
+            </form>
+        </div>
         {% else %}
-        <h1 class="no_enrollment_error">No Students are enrolled. Therefore, can't schedule exam.</h1>
+        <div class="alert alert-danger">
+            ⚠️ No students are enrolled in your course. Cannot schedule exams.
+        </div>
         {% endif %}
-        {% if recent_exams %}
-        <h1>Recent Exams</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Course ID</th>
-                    <th>Exam Date</th>
-                    <th>Exam Duration</th>
-                    <th>Exam Type</th>
-                    <th>Venue</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for exam in recent_exams %}
-                <tr>
-                    <td>{{ exam[1] }}</td>
-                    <td>{{ exam[2] }}</td>
-                    <td>{{ exam[3] }} hours</td>
-                    <td>{{ exam[4] }}</td>
-                    <td>{{ exam[5] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
+
+        <!-- Recent Exams Section (ALL past exams - unlimited) -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">📚 Recent Exams History</h2>
+                <span class="badge">{{ total_recent|default(0) }} Records</span>
+            </div>
+            
+            {% if recent_exams %}
+            <div class="search-bar">
+                <input type="text" id="searchRecent" class="search-input" placeholder="🔍 Search past exams...">
+            </div>
+            <div class="table-wrapper">
+                <table id="recentTable">
+                    <thead>
+                        <tr>
+                            <th>Exam ID</th>
+                            <th>Course ID</th>
+                            <th>Date</th>
+                            <th>Duration</th>
+                            <th>Type</th>
+                            <th>Venue</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exam in recent_exams %}
+                        <tr>
+                            <td>{{ exam['exam_id'] }}</td>
+                            <td>{{ exam['course_id'] }}</td>
+                            <td>{{ exam['exam_date'] }}</td>
+                            <td>{{ exam['exam_duration'] }} hrs</td>
+                            <td>{{ exam['exam_type'] }}</td>
+                            <td>{{ exam['venue'] }}</td>
+                            <td><span style="background:#e2e8f0; padding:0.25rem 0.5rem; border-radius:12px; font-size:0.75rem;">✅ Completed</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-data">
+                <p>📭 No past exams found</p>
+            </div>
+            {% endif %}
+        </div>
     </main>
-        <footer style="position: unset; bottom: 0; width: 100%;  text-align: center; padding: 10px 0;">
-        <p>© 2026 University Management System</p>
-        <p>Developed and Designed by Raman Oli</p>
+
+    <footer>
+        <p>© 2026 University Management System | Total Exams: {{ (total_upcoming|default(0)) + (total_recent|default(0)) }}</p>
     </footer>
-</body>
-<script>
-    setTimeout(function () {
-        var successMessage = document.querySelector('.success');
-        var errorMessages = document.querySelectorAll('.error');
-        var queryMessages = document.querySelectorAll('.query');
 
-        if (successMessage) {
-            successMessage.style.display = 'none';
+    <script>
+        // Search/filter functionality for unlimited exams
+        function searchTable(inputId, tableId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            
+            input.addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                const table = document.getElementById(tableId);
+                const rows = table.getElementsByTagName('tr');
+                
+                for (let i = 1; i < rows.length; i++) { // Skip header
+                    const row = rows[i];
+                    let textContent = '';
+                    const cells = row.getElementsByTagName('td');
+                    
+                    for (let cell of cells) {
+                        textContent += cell.textContent.toLowerCase() + ' ';
+                    }
+                    
+                    if (textContent.includes(filter)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
         }
-
-        errorMessages.forEach(function (error) {
-            error.style.display = 'none';
-        });
-
-        queryMessages.forEach(function (query) {
-            query.style.display = 'none';
-        });
-    }, 3000);
-</script>
-
+        
+        // Initialize search for both tables
+        searchTable('searchUpcoming', 'upcomingTable');
+        searchTable('searchRecent', 'recentTable');
+        
+        // Auto-hide alerts after 3 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 3000);
+        
+        // Display count of visible rows (useful for large datasets)
+        function updateVisibleCount(tableId, labelId) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            const visibleRows = Array.from(table.getElementsByTagName('tr'))
+                .filter(row => row.style.display !== 'none' && row.cells.length > 0).length;
+            
+            const countLabel = document.getElementById(labelId);
+            if (countLabel) {
+                countLabel.textContent = `Showing ${visibleRows} records`;
+            }
+        }
+        
+        // Optional: Add pagination for extremely large datasets (1000+ rows)
+        // This can be implemented if needed
+    </script>
+</body>
 </html>

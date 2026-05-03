@@ -208,15 +208,12 @@ def create_tables():
                 CREATE TABLE IF NOT EXISTS student_event_participation (
                     Student_ID INT NOT NULL,
                     Event_ID INT NOT NULL,
-                    Participation_Date DATE DEFAULT CURRENT_DATE,
+                    Participation_Date DATE DEFAULT (CURRENT_DATE),
                     Role ENUM('Participant', 'Organizer', 'Volunteer') DEFAULT 'Participant',
                     Result VARCHAR(50),
-
                     PRIMARY KEY (Student_ID, Event_ID),
-
                     FOREIGN KEY (Student_ID) REFERENCES students(Student_ID)
                     ON DELETE CASCADE ON UPDATE CASCADE,
-
                     FOREIGN KEY (Event_ID) REFERENCES events(Event_ID)
                     ON DELETE CASCADE ON UPDATE CASCADE
                 );
@@ -635,100 +632,258 @@ def view():
         if connection:
             connection.close()
 def insert_initial_data():
+    connection = None
+    cursor = None
     try:
-        connection =   get_connection(db_name=DATABASE_NAME)
+        connection = get_connection(db_name=DATABASE_NAME)
         cursor = connection.cursor()
-        
+
         # Insert department data first
+        print("\n[1/13] Inserting departments...")
         cursor.execute("""
-        INSERT INTO department (Department_ID, Department_Name, Head_of_Department) VALUES
-        ('CSE', 'Computer Science and Engineering', NULL),
-        ('ECE', 'Electronics and Communication Engineering', NULL),
-        ('ME', 'Mechanical Engineering', NULL),
-        ('CE', 'Civil Engineering', NULL),
-        ('EE', 'Electrical Engineering', NULL);
+        INSERT IGNORE INTO department (Department_ID, Department_Name, Head_of_Department) VALUES
+            ('CSE', 'Computer Science and Engineering', NULL),
+            ('ECE', 'Electronics and Communication Engineering', NULL),
+            ('ME', 'Mechanical Engineering', NULL),
+            ('CE', 'Civil Engineering', NULL),
+            ('EE', 'Electrical Engineering', NULL);
         """)
-
-        cursor.execute("""
-        INSERT INTO events (Event_Name, Event_Type, Event_Date, Venue, Organized_By, Status) VALUES
-        ('Hackathon 2026', 'Technical', '2026-04-10', 'Auditorium', 'CSE Dept', 'Upcoming'),
-        ('Cultural Fest', 'Cultural', '2026-05-01', 'Main Ground', 'Student Council', 'Upcoming'),
-        ('Football Tournament', 'Sports', '2026-04-20', 'Sports Complex', 'Sports Dept', 'Upcoming');
-        """)
-
-        cursor.execute("""
-        INSERT INTO student_event_participation (Student_ID, Event_ID, Role, Result) VALUES
-        (1, 1, 'Participant', 'Winner'),
-        (2, 1, 'Participant', NULL),
-        (1, 2, 'Organizer', NULL);
-        """)
-
-        # Now insert courses data
-        cursor.execute("""
-        INSERT INTO courses (Course_ID, Course_Name, Semester, Credits, Price) VALUES
-        ('UCB1234', 'ADVANCED CHEMISTRY', 1, 4.5, 1200),
-        ('UTA5678', 'ADVANCED PROGRAMMING', 1, 4.0, 1500),
-        ('UES9101', 'ELECTRICAL ENGINEERING', 1, 4.5, 1300),
-        ('UEN2345', 'ENVIRONMENTAL SCIENCE', 1, 3.0, 1100),
-        ('UMA6789', 'MATHEMATICS – III', 1, 3.5, 1400),
-        ('UES3456', 'ENGINEERING MECHANICS', 1, 2.5, 1000),
-        ('UPH7890', 'PHYSICS', 2, 4.5, 1200),
-        ('UTA1234', 'DATA STRUCTURES', 2, 4.0, 1500),
-        ('UTA5677', 'MANUFACTURING TECHNOLOGY', 2, 3.0, 1300),
-        ('UTA9101', 'ENGINEERING GRAPHICS', 2, 4.0, 1400),
-        ('UHU2345', 'COMMUNICATION SKILLS', 2, 3.0, 1100),
-        ('UMA6790', 'MATHEMATICS – IV', 2, 3.5, 1200),
-        ('UCS3456', 'OPERATING SYSTEMS', 3, 4.0, 1500),
-        ('UCS7890', 'DISCRETE MATHEMATICS', 3, 3.5, 1300),
-        ('UCS123', 'ALGORITHMS', 3, 4.0, 1400),
-        ('UCS678', 'COMPUTER ARCHITECTURE', 3, 3.0, 1200),
-        ('UMA9101', 'NUMERICAL METHODS', 3, 4.0, 1500),
-        ('UCS2345', 'ARTIFICIAL INTELLIGENCE', 4, 4.0, 1600),
-        ('UCS6789', 'DATABASE SYSTEMS', 4, 4.0, 1500),
-        ('UCS3457', 'SOFTWARE ENGINEERING', 4, 4.0, 1400),
-        ('UCS7891', 'NETWORKS', 4, 3.0, 1300),
-        ('UMA1234', 'OPTIMIZATION', 4, 4.0, 1200),
-        ('UML5678', 'MACHINE LEARNING', 5, 4.0, 1600),
-        ('UCS9101', 'PROBABILITY AND STATISTICS', 5, 4.0, 1500),
-        ('UCS2346', 'CLOUD COMPUTING', 5, 3.0, 1400),
-        ('UCS6780', 'NETWORK PROGRAMMING', 5, 3.0, 1300),
-        ('PE1234', 'ELECTIVE-I', 5, 3.0, 1200),
-        ('GE5678', 'GENERIC ELECTIVE', 5, 2.0, 1100),
-        ('UCS9102', 'THEORY OF COMPUTATION', 6, 3.5, 1500),
-        ('UCS2347', 'COMPUTER GRAPHICS', 6, 4.0, 1600),
-        ('UCS6791', 'QUANTUM COMPUTING', 6, 4.0, 1500),
-        ('PE3456', 'ELECTIVE-II', 6, 3.0, 1400),
-        ('PE7890', 'ELECTIVE-III', 6, 3.0, 1300),
-        ('UCS1234', 'CAPSTONE PROJECT', 6, 0.0, 1200),
-        ('UCS5678', 'COMPILER DESIGN', 7, 4.0, 1600),
-        ('UHU9101', 'ENGINEERING ETHICS', 7, 3.0, 1500),
-        ('UCS013', 'COGNITIVE COMPUTING', 7, 2.0, 1400),
-        ('PE6789', 'ELECTIVE-IV', 7, 3.0, 1300),
-        ('UCS345', 'PROJECT SEMESTER', 8, 15.0, 2000),
-        ('UCS7892', 'SOCIAL NETWORK ANALYSIS', 8, 3.0, 1500),
-        ('UCS432', 'CYBER SECURITY', 8, 4.0, 1600),
-        ('UCS786', 'FINAL PROJECT', 8, 8.0, 1800),
-        ('UCS9103', 'START-UP SEMESTER', 8, 15.0, 2000);
-        """)
-
         connection.commit()
-        print("Initial data inserted successfully.")
+        print("✓ Departments inserted successfully")
+
+        # Insert courses data
+        print("\n[2/13] Inserting courses...")
+        cursor.execute("""
+        INSERT IGNORE INTO courses (Course_ID, Course_Name, Semester, Credits, Price) VALUES
+            ('UCB1234', 'ADVANCED CHEMISTRY', 1, 4.5, 1200),
+            ('UTA5678', 'ADVANCED PROGRAMMING', 1, 4.0, 1500),
+            ('UES9101', 'ELECTRICAL ENGINEERING', 1, 4.5, 1300),
+            ('UEN2345', 'ENVIRONMENTAL SCIENCE', 1, 3.0, 1100),
+            ('UMA6789', 'MATHEMATICS – III', 1, 3.5, 1400),
+            ('UES3456', 'ENGINEERING MECHANICS', 1, 2.5, 1000),
+            ('UPH7890', 'PHYSICS', 2, 4.5, 1200),
+            ('UTA1234', 'DATA STRUCTURES', 2, 4.0, 1500),
+            ('UTA5677', 'MANUFACTURING TECHNOLOGY', 2, 3.0, 1300),
+            ('UTA9101', 'ENGINEERING GRAPHICS', 2, 4.0, 1400),
+            ('UHU2345', 'COMMUNICATION SKILLS', 2, 3.0, 1100),
+            ('UMA6790', 'MATHEMATICS – IV', 2, 3.5, 1200),
+            ('UCS3456', 'OPERATING SYSTEMS', 3, 4.0, 1500),
+            ('UCS7890', 'DISCRETE MATHEMATICS', 3, 3.5, 1300),
+            ('UCS123', 'ALGORITHMS', 3, 4.0, 1400),
+            ('UCS678', 'COMPUTER ARCHITECTURE', 3, 3.0, 1200),
+            ('UMA9101', 'NUMERICAL METHODS', 3, 4.0, 1500),
+            ('UCS2345', 'ARTIFICIAL INTELLIGENCE', 4, 4.0, 1600),
+            ('UCS6789', 'DATABASE SYSTEMS', 4, 4.0, 1500),
+            ('UCS3457', 'SOFTWARE ENGINEERING', 4, 4.0, 1400),
+            ('UCS7891', 'NETWORKS', 4, 3.0, 1300),
+            ('UMA1234', 'OPTIMIZATION', 4, 4.0, 1200),
+            ('UML5678', 'MACHINE LEARNING', 5, 4.0, 1600),
+            ('UCS9101', 'PROBABILITY AND STATISTICS', 5, 4.0, 1500),
+            ('UCS2346', 'CLOUD COMPUTING', 5, 3.0, 1400),
+            ('UCS6780', 'NETWORK PROGRAMMING', 5, 3.0, 1300),
+            ('PE1234', 'ELECTIVE-I', 5, 3.0, 1200),
+            ('GE5678', 'GENERIC ELECTIVE', 5, 2.0, 1100),
+            ('UCS9102', 'THEORY OF COMPUTATION', 6, 3.5, 1500),
+            ('UCS2347', 'COMPUTER GRAPHICS', 6, 4.0, 1600),
+            ('UCS6791', 'QUANTUM COMPUTING', 6, 4.0, 1500),
+            ('PE3456', 'ELECTIVE-II', 6, 3.0, 1400),
+            ('PE7890', 'ELECTIVE-III', 6, 3.0, 1300),
+            ('UCS1234', 'CAPSTONE PROJECT', 6, 0.0, 1200),
+            ('UCS5678', 'COMPILER DESIGN', 7, 4.0, 1600),
+            ('UHU9101', 'ENGINEERING ETHICS', 7, 3.0, 1500),
+            ('UCS013', 'COGNITIVE COMPUTING', 7, 2.0, 1400),
+            ('PE6789', 'ELECTIVE-IV', 7, 3.0, 1300),
+            ('UCS345', 'PROJECT SEMESTER', 8, 15.0, 2000),
+            ('UCS7892', 'SOCIAL NETWORK ANALYSIS', 8, 3.0, 1500),
+            ('UCS432', 'CYBER SECURITY', 8, 4.0, 1600),
+            ('UCS786', 'FINAL PROJECT', 8, 8.0, 1800),
+            ('UCS9103', 'START-UP SEMESTER', 8, 15.0, 2000);
+        """)
+        connection.commit()
+        print("✓ Courses inserted successfully")
+
+        # Insert events data
+        print("\n[3/13] Inserting events...")
+        cursor.execute("""
+        INSERT IGNORE INTO events (Event_Name, Event_Type, Event_Date, Venue, Organized_By, Status, Description) VALUES
+            ('Hackathon 2026', 'Technical', '2026-04-10', 'Auditorium', 'CSE Dept', 'Upcoming', 'Annual coding competition'),
+            ('Cultural Fest', 'Cultural', '2026-05-01', 'Main Ground', 'Student Council', 'Upcoming', 'Celebration of diversity'),
+            ('Football Tournament', 'Sports', '2026-04-20', 'Sports Complex', 'Sports Dept', 'Upcoming', 'Inter-department tournament'),
+            ('Seminar on AI', 'Academic', '2026-03-15', 'Seminar Hall', 'ECE Dept', 'Completed', 'Latest trends in AI'),
+            ('Alumni Meet', 'Social', '2026-06-10', 'Auditorium', 'Alumni Association', 'Upcoming', 'Networking event');
+        """)
+        connection.commit()
+        print("✓ Events inserted successfully")
+
+        # Insert students data
+        print("\n[4/13] Inserting students...")
+        cursor.execute("""
+        INSERT IGNORE INTO students (First_Name, Middle_Name, Last_Name, Street, District, State, Country, Gender, Date_of_Birth, Email, College_Email, Password, Enrollment_Year, Status) VALUES
+            ('Naruto', NULL, 'Uzumaki', 'Hidden Leaf Village', 'Konoha', 'Land of Fire', 'Japan', 'Male', '1993-10-10', 'naruto.uzumaki@example.com', 'naruto@thapar.edu', 'NineTails123', 2012, 'Enrolled'),
+            ('Sakura', NULL, 'Haruno', 'Hidden Leaf Village', 'Konoha', 'Land of Fire', 'Japan', 'Female', '1994-03-28', 'sakura.haruno@example.com', 'sakura@thapar.edu', 'MedicalNinja456', 2013, 'Enrolled'),
+            ('Sasuke', NULL, 'Uchiha', 'Hidden Leaf Village', 'Konoha', 'Land of Fire', 'Japan', 'Male', '1993-07-23', 'sasuke.uchiha@example.com', 'sasuke@thapar.edu', 'Sharingan789', 2012, 'Enrolled'),
+            ('Hinata', NULL, 'Hyuga', 'Hidden Leaf Village', 'Konoha', 'Land of Fire', 'Japan', 'Female', '1994-12-27', 'hinata.hyuga@example.com', 'hinata@thapar.edu', 'Byakugan321', 2013, 'Enrolled'),
+            ('Boruto', NULL, 'Uzumaki', 'Hidden Leaf Village', 'Konoha', 'Land of Fire', 'Japan', 'Male', '2018-05-15', 'boruto.uzumaki@example.com', 'boruto@thapar.edu', 'Rasengan456', 2037, 'Pending'),
+            ('Sarada', NULL, 'Uchiha', 'Hidden Leaf Village', 'Konoha', 'Land of Fire', 'Japan', 'Female', '2019-02-20', 'sarada.uchiha@example.com', 'sarada@thapar.edu', 'Sharingan789', 2038, 'Pending');
+        """)
+        connection.commit()
+        print("✓ Students inserted successfully")
+
+        # Insert faculty data (needs department and courses)
+        print("\n[5/13] Inserting faculty...")
+        cursor.execute("""
+        INSERT IGNORE INTO faculty (First_Name, Middle_Name, Last_Name, Designation, Mail, Official_Mail, Password, Course_ID, Department_ID, Status) VALUES
+            ('Minato', NULL, 'Namikaze', 'Professor', 'minato.namikaze@gmail.com', 'minato@thapar.edu', 'Hokage123', 'UCS6789', 'CSE', 'Active'),
+            ('Kakashi', NULL, 'Hatake', 'Associate Professor', 'kakashi.hatake@gmail.com', 'kakashi.faculty@thapar.edu', 'Sharingan456', 'UCS3456', 'CSE', 'Active'),
+            ('Tsunade', NULL, 'Senju', 'Professor', 'tsunade.senju@gmail.com', 'tsunade@thapar.edu', 'Slug456', 'UMA6789', 'ME', 'Active'),
+            ('Jiraiya', NULL, 'Sage', 'Assistant Professor', 'jiraiya.sage@gmail.com', 'jiraiya@thapar.edu', 'Toad789', 'UCS2345', 'CSE', 'Active'),
+            ('Orochimaru', NULL, 'Snake', 'Lecturer', 'orochi.snake@gmail.com', 'orochi@thapar.edu', 'Immortal123', 'UPH7890', 'EE', 'Active');
+        """)
+        connection.commit()
+        print("✓ Faculty inserted successfully")
+
+        # Insert student_phone_no (needs students)
+        print("\n[6/13] Inserting student phone numbers...")
+        cursor.execute("""
+        INSERT IGNORE INTO student_phone_no (Student_ID, Phone) VALUES
+            (1, '+91-9876543210'),
+            (1, '+91-9876543211'),
+            (2, '+91-8765432109'),
+            (3, '+91-7654321098'),
+            (4, '+91-6543210987'),
+            (5, '+91-5432109876'),
+            (6, '+91-4321098765');
+        """)
+        connection.commit()
+        print("✓ Student phone numbers inserted successfully")
+
+        # Insert faculty_phone_no (needs faculty)
+        print("\n[7/13] Inserting faculty phone numbers...")
+        cursor.execute("""
+        INSERT IGNORE INTO faculty_phone_no (Faculty_ID, Phone) VALUES
+            (1, '+91-1122334455'),
+            (2, '+91-2233445566'),
+            (3, '+91-3344556677'),
+            (4, '+91-4455667788'),
+            (5, '+91-5566778899');
+        """)
+        connection.commit()
+        print("✓ Faculty phone numbers inserted successfully")
+
+        # Insert enrollment (needs students and courses)
+        print("\n[8/13] Inserting enrollments...")
+        cursor.execute("""
+        INSERT IGNORE INTO enrollment (Student_ID, Course_ID, Enrolled_IN) VALUES
+            (1, 'UCS6789', '2026-01-15'),
+            (1, 'UCS3456', '2026-01-15'),
+            (2, 'UMA6789', '2026-01-15'),
+            (3, 'UCS2345', '2026-01-15'),
+            (4, 'UPH7890', '2026-01-15'),
+            (5, 'UCB1234', '2045-01-15'),
+            (6, 'UTA5678', '2046-01-15');
+        """)
+        connection.commit()
+        print("✓ Enrollments inserted successfully")
+
+        # Insert exams (needs courses)
+        print("\n[9/13] Inserting exams...")
+        cursor.execute("""
+        INSERT IGNORE INTO exams (Course_ID, Exam_Date, Exam_Duration, Exam_Type, Venue, Status) VALUES
+            ('UCS6789', '2026-04-15', 3.0, 'Mid Semester Test', 'Room 101', 'Unevaluated'),
+            ('UCS3456', '2026-04-20', 3.0, 'Mid Semester Test', 'Room 102', 'Unevaluated'),
+            ('UMA6789', '2026-04-25', 2.5, 'Quiz-1', 'Room 103', 'Evaluated'),
+            ('UCS2345', '2026-05-01', 3.0, 'End Semester Test', 'Auditorium', 'Unevaluated'),
+            ('UPH7890', '2026-05-05', 2.0, 'Lab Evaluation I', 'Lab 1', 'Evaluated');
+        """)
+        connection.commit()
+        print("✓ Exams inserted successfully")
+
+        # Insert takes_exams (needs students and exams)
+        print("\n[10/13] Inserting takes_exams...")
+        cursor.execute("""
+        INSERT IGNORE INTO takes_exams (Student_ID, Exam_ID, Status) VALUES
+            (1, 1, 'Unevaluated'),
+            (1, 2, 'Unevaluated'),
+            (2, 3, 'Evaluated'),
+            (3, 4, 'Unevaluated'),
+            (4, 5, 'Evaluated');
+        """)
+        connection.commit()
+        print("✓ Takes_exams inserted successfully")
+
+        # Insert results (needs exams, students, courses)
+        print("\n[11/13] Inserting results...")
+        cursor.execute("""
+        INSERT IGNORE INTO results (Exam_ID, Student_ID, Course_ID, Marks_Obtained, Grade, Status) VALUES
+            (3, 2, 'UMA6789', 85.5, 'A-', 'Evaluated'),
+            (5, 4, 'UPH7890', 92.0, 'A', 'Evaluated'),
+            (1, 1, 'UCS6789', NULL, NULL, 'Unevaluated'),
+            (2, 1, 'UCS3456', NULL, NULL, 'Unevaluated'),
+            (4, 3, 'UCS2345', NULL, NULL, 'Unevaluated');
+        """)
+        connection.commit()
+        print("✓ Results inserted successfully")
+
+        # Insert student_event_participation (needs students and events)
+        print("\n[12/13] Inserting student event participation...")
+        cursor.execute("""
+        INSERT IGNORE INTO student_event_participation (Student_ID, Event_ID, Role, Result) VALUES
+            (1, 1, 'Participant', 'Winner'),
+            (2, 1, 'Participant', NULL),
+            (1, 2, 'Organizer', NULL),
+            (3, 3, 'Participant', 'Runner-up'),
+            (4, 4, 'Volunteer', NULL);
+        """)
+        connection.commit()
+        print("✓ Student event participation inserted successfully")
+
+        # Insert fees (needs students, exams, courses)
+        print("\n[13/13] Inserting fees...")
+        cursor.execute("""
+        INSERT IGNORE INTO fees (Student_ID, Exam_ID, Course_ID, Amount, Issued_Date, Type, Payment_Date, Status, Payment_ID) VALUES
+            (1, 1, 'UCS6789', 500.0, '2026-03-01', 'Exam Fee', '2026-03-05', 'Paid', 'PAY001'),
+            (1, 2, 'UCS3456', 500.0, '2026-03-01', 'Exam Fee', NULL, 'Pending', NULL),
+            (2, 3, 'UMA6789', 300.0, '2026-03-01', 'Exam Fee', '2026-03-10', 'Paid', 'PAY002'),
+            (3, 4, 'UCS2345', 600.0, '2026-03-01', 'Exam Fee', NULL, 'Pending', NULL),
+            (4, 5, 'UPH7890', 400.0, '2026-03-01', 'Exam Fee', '2026-03-15', 'Paid', 'PAY003'),
+            (5, NULL, 'UCB1234', 1200.0, '2045-01-01', 'Course Registration', NULL, 'Pending', NULL),
+            (6, NULL, 'UTA5678', 1500.0, '2046-01-01', 'Registration Fees', NULL, 'Pending', NULL);
+        """)
+        connection.commit()
+        print("✓ Fees inserted successfully")
+
+        # Insert additional admin data (no FK)
+        print("\nInserting additional admin users...")
+        cursor.execute("""
+        INSERT IGNORE INTO admin (User_Name, Email, Password) VALUES
+            ('admin2', 'admin2@thapar.edu', 'admin2@tiet'),
+            ('superadmin', 'super@thapar.edu', 'super@tiet');
+        """)
+        connection.commit()
+        print("✓ Admin users inserted successfully")
+
+        print("\n" + "="*60)
+        print("✓ All dummy data inserted successfully into all tables!")
+        print("="*60)
     except pymysql.Error as err:
-        print(f"Error: {err}")
-    finally:
+        print(f"\n✗ Error during data insertion: {err}")
         if connection:
+            connection.rollback()
+    finally:
+        if cursor:
             cursor.close()
+        if connection:
             connection.close()
 
 # --- Main Execution ---
 if __name__ == "__main__":
     print("--- University Management System Database Setup ---")
 
-    # # Execute the functions in sequence
-    # drop_database()
+    # Execute the functions in sequence
+    drop_database()  # Drop existing database to start fresh
     create_database() # Creates DB and Admin table + default user
     create_tables()   # Creates other tables and FKs
-    insert_initial_data() # Uncomment to insert initial data into courses and department tables
+    insert_initial_data() # Insert dummy data into all tables
     import sys
     os.system('cls' if os.name == 'nt' else 'clear')
     create_audit_trigger() # Creates audit table and triggers (excluding audit_log)
@@ -737,7 +892,7 @@ if __name__ == "__main__":
     # Demonstrate the procedure with sample data
     students = [
     {
-        'First_Name': 'Obito',
+        'First_Name': 'Itachi',
         'Middle_Name': None,
         'Last_Name': 'Uchiha',
         'Street': 'Hidden Leaf Village',
@@ -745,10 +900,10 @@ if __name__ == "__main__":
         'State': 'Land of Fire',
         'Country': 'Japan',
         'Gender': 'Male',
-        'Date_of_Birth': '1990-02-10',
-        'Email': 'obito.uchiha@example.com',
-        'College_Email': 'obito@thapar.edu',
-        'Password': 'Mangekyo123',
+        'Date_of_Birth': '1990-06-09',
+        'Email': 'itachi.uchiha@example.com',
+        'College_Email': 'itachi@thapar.edu',
+        'Password': 'Tsukuyomi123',
         'Enrollment_Year': 2010
     },
     {
@@ -777,7 +932,7 @@ if __name__ == "__main__":
         'Gender': 'Male',
         'Date_of_Birth': '1989-09-15',
         'Email': 'kakashi.hatake@example.com',
-        'College_Email': 'kakashi@thapar.edu',
+        'College_Email': 'kakashi.teacher@thapar.edu',
         'Password': 'Sharingan789',
         'Enrollment_Year': 2009
     },{
